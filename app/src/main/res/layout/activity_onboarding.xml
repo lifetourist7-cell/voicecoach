@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_deep">
+
+    <!-- ─── 상단: 크레딧 + Skip 버튼 ─── -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/space_m"
+        android:paddingEnd="@dimen/space_m"
+        android:paddingTop="@dimen/space_m">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|center_vertical"
+            android:layout_marginStart="@dimen/space_s"
+            android:text="만든이 : 고땡상"
+            android:textAppearance="@style/TextAppearance.VC.Caption"/>
+
+        <Button
+            android:id="@+id/btnSkip"
+            style="@style/Widget.VC.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginEnd="@dimen/space_xs"
+            android:text="건너뛰기"/>
+    </FrameLayout>
+
+    <!-- ─── ViewPager2 — 3 페이지 carousel ─── -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/onboardingPager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <!-- ─── 하단: 페이지 인디케이터 + 다음/시작하기 버튼 ─── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:paddingStart="@dimen/space_l"
+        android:paddingEnd="@dimen/space_l"
+        android:paddingTop="@dimen/space_m"
+        android:paddingBottom="@dimen/space_l">
+
+        <LinearLayout
+            android:id="@+id/pageIndicators"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/space_l">
+
+            <!--
+                wrap_content 금지! 일반 <View> 는 background drawable 의 intrinsic size 를
+                무시하고 부모 영역 전체를 채워버림 (View.getDefaultSize 의 AT_MOST 처리).
+                page_indicator_active 의 size 24dp x 6dp 와 일치하도록 명시.
+            -->
+            <View
+                android:id="@+id/indicator0"
+                android:layout_width="24dp"
+                android:layout_height="6dp"
+                android:background="@drawable/page_indicator_active"
+                android:layout_marginEnd="@dimen/space_s"/>
+
+            <View
+                android:id="@+id/indicator1"
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:background="@drawable/page_indicator_inactive"
+                android:layout_marginEnd="@dimen/space_s"/>
+
+            <View
+                android:id="@+id/indicator2"
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:background="@drawable/page_indicator_inactive"/>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnNext"
+            style="@style/Widget.VC.Button.Primary"
+            android:layout_width="match_parent"
+            android:text="다음"/>
+    </LinearLayout>
+</LinearLayout>

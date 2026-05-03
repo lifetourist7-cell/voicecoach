@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 환영 일러스트 — 큰 하트 + 펄스 라인 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="160dp"
+    android:height="160dp"
+    android:viewportWidth="160"
+    android:viewportHeight="160">
+
+    <!-- 외곽 펄스 원 (그라데이션 느낌의 점선) -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/hr_neon_red"
+        android:strokeWidth="2"
+        android:strokeAlpha="0.3"
+        android:pathData="M80,80 m-65,0 a65,65 0 1,0 130,0 a65,65 0 1,0 -130,0" />
+
+    <!-- 중간 펄스 원 -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/hr_neon_red"
+        android:strokeWidth="2"
+        android:strokeAlpha="0.5"
+        android:pathData="M80,80 m-48,0 a48,48 0 1,0 96,0 a48,48 0 1,0 -96,0" />
+
+    <!-- 큰 하트 (가운데) -->
+    <path
+        android:fillColor="@color/hr_neon_red"
+        android:pathData="M80,108
+            C80,108 50,90 38,72
+            C30,60 36,42 50,42
+            C62,42 74,48 80,58
+            C86,48 98,42 110,42
+            C124,42 130,60 122,72
+            C110,90 80,108 80,108 Z" />
+
+    <!-- 펄스 라인 (하트 가로지름) -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/text_primary"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M48,76 L62,76 L66,68 L72,84 L80,60 L88,84 L94,68 L98,76 L112,76" />
+</vector>

@@ -24,3 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "HR Monitor"
 include(":app")
+include(":wear")

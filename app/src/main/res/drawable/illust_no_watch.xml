@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Empty state 일러스트 — 워치가 연결 안 된 상태.
+    원형 워치 + 점선 + 흐릿한 하트. 미니멀.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- 워치 본체 (원) -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/text_secondary"
+        android:strokeWidth="2"
+        android:pathData="M60,42 m-22,0 a22,22 0 1,0 44,0 a22,22 0 1,0 -44,0" />
+
+    <!-- 워치 스트랩 위 -->
+    <path
+        android:fillColor="@color/text_tertiary"
+        android:pathData="M48,22 L72,22 L70,32 L50,32 Z" />
+
+    <!-- 워치 스트랩 아래 -->
+    <path
+        android:fillColor="@color/text_tertiary"
+        android:pathData="M50,52 L70,52 L72,62 L48,62 Z" />
+
+    <!-- 점선 (워치 → 폰 연결 상태 무) -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/text_tertiary"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M82,72 L92,82 M88,68 L98,78 M76,82 L86,92"
+        android:pathPattern="2,4" />
+
+    <!-- 흐릿한 하트 (가운데, 워치 화면 위치) -->
+    <path
+        android:fillColor="@color/hr_neon_red"
+        android:fillAlpha="0.5"
+        android:pathData="M60,50
+            C60,50 50,44 46,38
+            C43,34 45,28 50,28
+            C54,28 58,30 60,34
+            C62,30 66,28 70,28
+            C75,28 77,34 74,38
+            C70,44 60,50 60,50 Z" />
+
+    <!-- 물음표 (연결 모름) -->
+    <path
+        android:fillColor="@color/text_secondary"
+        android:pathData="M95,90
+            m-3,-8
+            c0,-2 1,-3 3,-3
+            c2,0 3,1 3,3
+            c0,1 -1,2 -2,2
+            l-1,1
+            l0,2
+            l-2,0
+            l0,-3
+            l1,-1
+            c1,0 2,-1 2,-1
+            c0,-1 -1,-1 -1,-1
+            c-1,0 -1,1 -1,1
+            l-2,0 Z
+            M93,90
+            l2,0
+            l0,2
+            l-2,0 Z" />
+</vector>

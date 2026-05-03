@@ -1,9 +1,130 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+
+    <!-- ─── Base Theme ─── -->
     <style name="Base.Theme.HRMonitor" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- Pretendard 를 앱 전체 기본 폰트로 -->
+        <item name="android:fontFamily">@font/pretendard</item>
+        <item name="fontFamily">@font/pretendard</item>
+
+        <!-- Material 3 컬러 매핑 — 하드코드 대신 토큰 사용 -->
+        <item name="colorPrimary">@color/hr_neon_red</item>
+        <item name="colorOnPrimary">@color/text_primary</item>
+        <item name="colorSecondary">@color/pace_electric_blue</item>
+        <item name="colorOnSecondary">@color/text_primary</item>
+        <item name="colorError">@color/error</item>
+        <item name="android:colorBackground">@color/background_deep</item>
+        <item name="colorSurface">@color/surface_dark</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorTertiary">@color/text_tertiary</item>
     </style>
 
     <style name="Theme.HRMonitor" parent="Base.Theme.HRMonitor" />
+
+    <!-- ─── Splash Screen (Android 12+ API, 구버전에서 backport) ─── -->
+    <style name="Theme.HRMonitor.SplashScreen" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/background_deep</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/background_deep</item>
+        <item name="postSplashScreenTheme">@style/Theme.HRMonitor</item>
+    </style>
+
+    <!-- ─── Type Scale (6단계) ─── -->
+    <!-- 사용처:
+         Display    — 영웅 메트릭 (HR 큰 숫자, 88sp)
+         Headline   — 화면 제목 (32sp)
+         Title      — 섹션 카드 제목 (20sp)
+         Body       — 본문 (16sp)
+         Label      — 버튼/라벨 (14sp)
+         Caption    — 보조 설명 (12sp)
+    -->
+    <style name="TextAppearance.VC.Display" parent="TextAppearance.Material3.DisplayLarge">
+        <item name="android:textSize">88sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/pretendard</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:letterSpacing">-0.04</item>
+    </style>
+
+    <style name="TextAppearance.VC.Headline" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textSize">32sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/pretendard</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
+
+    <style name="TextAppearance.VC.Title" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/pretendard</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="TextAppearance.VC.Body" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">@font/pretendard</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="TextAppearance.VC.Label" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">@font/pretendard</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="TextAppearance.VC.Caption" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">@font/pretendard</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <!-- 메트릭 변형 — 큰 숫자 표시용 (HR, BPM 등) -->
+    <style name="TextAppearance.VC.Metric.Hero" parent="TextAppearance.VC.Display">
+        <item name="android:textSize">76sp</item>
+        <item name="android:textColor">@color/hr_neon_red</item>
+    </style>
+
+    <style name="TextAppearance.VC.Metric.Large" parent="TextAppearance.VC.Display">
+        <item name="android:textSize">48sp</item>
+    </style>
+
+    <style name="TextAppearance.VC.Metric.Medium" parent="TextAppearance.VC.Headline">
+        <item name="android:textSize">32sp</item>
+    </style>
+
+    <!-- ─── 기존 스타일 (유지) ─── -->
+    <style name="SectionLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/pretendard</item>
+        <item name="android:letterSpacing">0.1</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:layout_marginStart">@dimen/space_xs</item>
+        <item name="android:layout_marginBottom">@dimen/space_s</item>
+    </style>
+
+    <!-- 상단 모드 선택 세그먼티드 탭의 각 RadioButton 스타일 -->
+    <style name="ModeSegmentButton">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_height">@dimen/button_height_compact</item>
+        <item name="android:button">@null</item>
+        <item name="android:background">@drawable/selector_mode_segment</item>
+        <item name="android:textColor">@color/selector_mode_text</item>
+        <!-- 13sp — "Meditation" (10자) 도 한 줄에 맞으면서 한글 탭과 동일 크기 유지.
+             autoSize 는 View 단위로 동작해서 Meditation 만 작아짐 → 사용 안 함. -->
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/pretendard</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingStart">2dp</item>
+        <item name="android:paddingEnd">2dp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:letterSpacing">-0.02</item>
+    </style>
 </resources>

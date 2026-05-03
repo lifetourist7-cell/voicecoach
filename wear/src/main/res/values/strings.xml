@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">VoiceCoach</string>
+    <string name="wear_btn_on">전송 중</string>
+    <string name="wear_btn_off">시작</string>
+    <string name="wear_status_idle">대기 중</string>
+    <string name="wear_status_starting">측정 시작…</string>
+    <string name="wear_status_sending">전송 중</string>
+    <string name="wear_status_unavailable">센서 일시 불가</string>
+    <string name="wear_status_perm_denied">권한 필요</string>
+    <string name="wear_phase_a_placeholder">초기 셋업 완료\n다음 빌드에서 HR 전송 토글 추가 예정</string>
+</resources>

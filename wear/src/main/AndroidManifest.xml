@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-feature android:name="android.hardware.type.watch"/>
+
+    <!-- HR 측정 권한 -->
+    <uses-permission android:name="android.permission.BODY_SENSORS"/>
+    <!-- 측정 중 화면 꺼져도 동작 -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH"/>
+    <!-- Foreground service 알림 (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <application
+        android:allowBackup="true"
+        android:icon="@android:drawable/sym_def_app_icon"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.VoiceCoachWear">
+
+        <uses-library
+            android:name="com.google.android.wearable"
+            android:required="true"/>
+
+        <!-- Wear standalone — 폰 없이도 워치 자체 실행 가능 (페어링 후엔 폰과 메시지 통신) -->
+        <meta-data
+            android:name="com.google.android.wearable.standalone"
+            android:value="true"/>
+
+        <!--
+            namespace = com.jecheon.voicecoach.wear 라 ".XYZ" 가 곧 fully qualified
+            com.jecheon.voicecoach.wear.XYZ. 과거에 ".wear.XYZ" 로 적어 merged manifest 에서
+            com.jecheon.voicecoach.wear.wear.XYZ 로 들어가 클래스 미존재 → 런처/서비스 미동작.
+        -->
+        <activity
+            android:name=".WearMainActivity"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".HrSenderService"
+            android:exported="false"
+            android:foregroundServiceType="health"/>
+
+        <!-- 폰 앱이 보내는 시작/정지 명령 수신 -->
+        <service
+            android:name=".PhoneCommandListenerService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED"/>
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/start_hr_sender"/>
+                <data android:scheme="wear" android:host="*" android:pathPrefix="/stop_hr_sender"/>
+            </intent-filter>
+        </service>
+
+    </application>
+</manifest>

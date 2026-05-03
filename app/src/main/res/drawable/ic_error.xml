@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="@dimen/icon_size"
+    android:height="@dimen/icon_size"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- 경고 삼각형 + ! -->
+    <path
+        android:fillColor="@color/error"
+        android:pathData="M12,2 L22,20 L2,20 Z" />
+    <path
+        android:fillColor="@color/text_primary"
+        android:pathData="M11,9 L13,9 L13,15 L11,15 Z" />
+    <path
+        android:fillColor="@color/text_primary"
+        android:pathData="M11,16 L13,16 L13,18 L11,18 Z" />
+</vector>

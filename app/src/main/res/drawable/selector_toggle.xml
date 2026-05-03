@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- ON 상태: 배경을 살짝 밝게 하고 테두리 강조 -->
+    <item android:state_checked="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/surface_variant"/>
+            <stroke android:width="@dimen/stroke_medium" android:color="@color/pace_electric_blue"/>
+            <corners android:radius="@dimen/radius_m"/>
+        </shape>
+    </item>
+    <!-- OFF 상태: 기본 어두운 배경 -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/surface_dark"/>
+            <stroke android:width="@dimen/stroke_thin" android:color="@color/border_subtle"/>
+            <corners android:radius="@dimen/radius_m"/>
+        </shape>
+    </item>
+</selector>

@@ -1,244 +1,1532 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000">
+    android:background="@color/background_deep">
 
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- ─── 고정 상단: 모드 선택 탭 + 설정 ─── -->
+    <!-- paddingTop 은 edge-to-edge 시 root 에 status bar inset 이 적용되므로
+         여기서는 컨텐츠 마진만 (16dp). status bar 높이는 root padding 으로 자동 처리. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="@dimen/space_l"
+        android:paddingEnd="@dimen/space_l"
+        android:paddingTop="@dimen/space_m"
+        android:paddingBottom="@dimen/space_l"
+        android:background="@color/background_deep"
+        android:elevation="4dp">
+
+        <RadioGroup
+            android:id="@+id/modeSelector"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_segment_group"
+            android:padding="3dp">
+
+            <RadioButton
+                android:id="@+id/modeRunning"
+                style="@style/ModeSegmentButton"
+                android:text="달리기"
+                android:checked="true"/>
+
+            <RadioButton
+                android:id="@+id/modeGolf"
+                style="@style/ModeSegmentButton"
+                android:text="골프"/>
+
+            <RadioButton
+                android:id="@+id/modeMeditation"
+                style="@style/ModeSegmentButton"
+                android:text="Meditation"/>
+        </RadioGroup>
+
+        <ImageButton
+            android:id="@+id/btnHelp"
+            style="@style/Widget.VC.Button.Icon"
+            android:src="@drawable/ic_help"
+            android:layout_marginStart="@dimen/space_s"
+            android:contentDescription="도움말"/>
+
+        <ImageButton
+            android:id="@+id/btnSettings"
+            style="@style/Widget.VC.Button.Icon"
+            android:src="@android:drawable/ic_menu_preferences"
+            app:tint="@color/text_secondary"
+            android:layout_marginStart="@dimen/space_xs"
+            android:contentDescription="설정"/>
+    </LinearLayout>
+
+    <!-- ─── 스크롤 본문 ─── -->
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none"
+        android:overScrollMode="never">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:gravity="center"
-            android:paddingStart="32dp"
-            android:paddingEnd="32dp"
-            android:paddingTop="72dp"
-            android:paddingBottom="32dp">
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="48dp">
 
-            <TextView
-                android:id="@+id/tvHeartRate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="-- BPM"
-                android:textSize="48sp"
-                android:textColor="#FF4444"
-                android:textStyle="bold"
-                android:layout_marginBottom="16dp"/>
-
-            <TextView
-                android:id="@+id/tvPace"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="--'--&quot;"
-                android:textSize="48sp"
-                android:textColor="#44AAFF"
-                android:textStyle="bold"
-                android:layout_marginBottom="24dp"/>
-
-            <TextView
-                android:id="@+id/tvStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="대기 중"
-                android:textSize="18sp"
-                android:textColor="#FFFFFF"
-                android:layout_marginBottom="48dp"/>
-
+            <!-- ─── 실시간 데이터 대형 카드 (달리기/골프 모드) ─── -->
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:id="@+id/dataCard"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="24dp">
-
-                <ToggleButton
-                    android:id="@+id/btnHR"
-                    android:layout_width="120dp"
-                    android:layout_height="60dp"
-                    android:textOn="HR ✓"
-                    android:textOff="HR"
-                    android:textSize="18sp"
-                    android:layout_marginEnd="16dp"/>
-
-                <ToggleButton
-                    android:id="@+id/btnPace"
-                    android:layout_width="120dp"
-                    android:layout_height="60dp"
-                    android:textOn="PACE ✓"
-                    android:textOff="PACE"
-                    android:textSize="18sp"/>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="읽기 간격: "
-                    android:textColor="#FFFFFF"
-                    android:textSize="18sp"/>
-
-                <Button
-                    android:id="@+id/btnIntervalMinus"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:text="−"
-                    android:textSize="22sp"
-                    android:padding="0dp"
-                    android:minWidth="0dp"
-                    android:minHeight="0dp"/>
-
-                <EditText
-                    android:id="@+id/etInterval"
-                    android:layout_width="72dp"
-                    android:layout_height="wrap_content"
-                    android:inputType="number"
-                    android:text="3"
-                    android:textSize="18sp"
-                    android:textColor="#FFFFFF"
-                    android:textAlignment="center"
-                    android:backgroundTint="#FFFFFF"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="초 "
-                    android:textColor="#FFFFFF"
-                    android:textSize="18sp"/>
-
-                <Button
-                    android:id="@+id/btnIntervalPlus"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:text="+"
-                    android:textSize="22sp"
-                    android:padding="0dp"
-                    android:minWidth="0dp"
-                    android:minHeight="0dp"/>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="24dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="언어: "
-                    android:textColor="#FFFFFF"
-                    android:textSize="18sp"/>
-
-                <Spinner
-                    android:id="@+id/spinnerLanguage"
-                    android:layout_width="200dp"
-                    android:layout_height="wrap_content"
-                    android:backgroundTint="#FFFFFF"/>
-
-            </LinearLayout>
-
-            <!-- 메트로놈 구분선 -->
-            <View
-                android:layout_width="300dp"
-                android:layout_height="1dp"
-                android:background="#444444"
-                android:layout_marginBottom="24dp"/>
-
-            <ToggleButton
-                android:id="@+id/btnMetronome"
-                android:layout_width="200dp"
-                android:layout_height="60dp"
-                android:textOn="메트로놈 ON ✓"
-                android:textOff="메트로놈"
-                android:textSize="16sp"
-                android:layout_marginBottom="16dp"/>
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/bg_card"
+                android:paddingTop="40dp"
+                android:paddingBottom="32dp"
                 android:layout_marginBottom="32dp">
 
-                <Button
-                    android:id="@+id/btnBpmMinus"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:text="−"
-                    android:textSize="22sp"
-                    android:padding="0dp"
-                    android:minWidth="0dp"
-                    android:minHeight="0dp"/>
-
-                <EditText
-                    android:id="@+id/etMetronomeBpm"
-                    android:layout_width="80dp"
-                    android:layout_height="wrap_content"
-                    android:inputType="number"
-                    android:text="180"
-                    android:textSize="18sp"
-                    android:textColor="#FFFFFF"
-                    android:textAlignment="center"
-                    android:backgroundTint="#FFFFFF"/>
-
-                <TextView
+                <!-- 심박수 -->
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BPM "
-                    android:textColor="#FFFFFF"
-                    android:textSize="18sp"/>
+                    android:orientation="horizontal"
+                    android:gravity="bottom">
+
+                    <TextView
+                        android:id="@+id/tvHeartRate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="--"
+                        android:textSize="88sp"
+                        android:textColor="@color/hr_neon_red"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-condensed-light"
+                        android:includeFontPadding="false"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="BPM"
+                        android:textSize="18sp"
+                        android:textColor="@color/text_secondary"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="18dp"
+                        android:layout_marginStart="8dp"/>
+                </LinearLayout>
+
+                <!-- 페이스 영역 — 달리기 모드에서만 표시 -->
+                <LinearLayout
+                    android:id="@+id/pacePanel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal">
+
+                    <View
+                        android:layout_width="60dp"
+                        android:layout_height="2dp"
+                        android:background="@color/surface_variant"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="24dp"/>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="bottom">
+
+                        <TextView
+                            android:id="@+id/tvPace"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="--'--&quot;"
+                            android:textSize="48sp"
+                            android:textColor="@color/pace_electric_blue"
+                            android:textStyle="bold"
+                            android:fontFamily="sans-serif-condensed-light"
+                            android:includeFontPadding="false"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="PACE"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="12dp"
+                            android:layout_marginStart="8dp"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- 케이던스 영역 — 상시 표시. 측정 OFF 시 placeholder 표시 -->
+                <LinearLayout
+                    android:id="@+id/cadencePanel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="bottom|center_horizontal"
+                    android:layout_marginTop="@dimen/space_m">
+
+                    <TextView
+                        android:id="@+id/tvCadence"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="--"
+                        android:textSize="36sp"
+                        android:textColor="@color/accent_green"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-condensed-light"
+                        android:includeFontPadding="false"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="SPM"
+                        android:textSize="14sp"
+                        android:textColor="@color/text_secondary"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="6dp"
+                        android:layout_marginStart="@dimen/space_s"/>
+                </LinearLayout>
+
+                <!-- 상태 영역 — 텍스트 옆에 spinner / error 아이콘이 상황에 따라 표시 -->
+                <LinearLayout
+                    android:id="@+id/statusRow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="@dimen/space_l">
+
+                    <com.google.android.material.progressindicator.CircularProgressIndicator
+                        android:id="@+id/statusProgress"
+                        android:layout_width="@dimen/icon_size_s"
+                        android:layout_height="@dimen/icon_size_s"
+                        android:indeterminate="true"
+                        app:indicatorColor="@color/pace_electric_blue"
+                        app:trackThickness="2dp"
+                        app:indicatorSize="@dimen/icon_size_s"
+                        android:visibility="gone"
+                        android:layout_marginEnd="@dimen/space_s"/>
+
+                    <ImageView
+                        android:id="@+id/statusErrorIcon"
+                        android:layout_width="@dimen/icon_size_s"
+                        android:layout_height="@dimen/icon_size_s"
+                        android:src="@drawable/ic_error"
+                        android:visibility="gone"
+                        android:contentDescription="에러"
+                        android:layout_marginEnd="@dimen/space_s"/>
+
+                    <TextView
+                        android:id="@+id/tvStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="연결 대기"
+                        android:textAppearance="@style/TextAppearance.VC.Label"
+                        android:textColor="@color/text_secondary"/>
+                </LinearLayout>
 
                 <Button
-                    android:id="@+id/btnBpmPlus"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:text="+"
-                    android:textSize="22sp"
-                    android:padding="0dp"
+                    android:id="@+id/btnRetry"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="다시 시도"
+                    android:textSize="12sp"
+                    android:textColor="@color/pace_electric_blue"
+                    android:background="?attr/selectableItemBackground"
                     android:minWidth="0dp"
-                    android:minHeight="0dp"/>
+                    android:minHeight="0dp"
+                    android:paddingStart="@dimen/space_m"
+                    android:paddingEnd="@dimen/space_m"
+                    android:visibility="gone"
+                    android:layout_marginTop="@dimen/space_s"/>
 
             </LinearLayout>
 
-            <!-- 구분선 -->
-            <View
-                android:layout_width="300dp"
-                android:layout_height="1dp"
-                android:background="#444444"
-                android:layout_marginBottom="24dp"/>
+            <!-- ─── Meditation 전용 데이터 카드 ─── -->
+            <LinearLayout
+                android:id="@+id/meditationDataCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:paddingTop="12dp"
+                android:paddingBottom="24dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:visibility="gone"
+                android:layout_marginBottom="32dp">
 
+                <!-- 몰입모드 진입 링크 (우측 정렬) — fullscreen 아이콘 + 라벨 -->
+                <TextView
+                    android:id="@+id/btnFocusMode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="몰입 모드"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.05"
+                    android:gravity="center_vertical"
+                    android:drawableEnd="@drawable/ic_fullscreen"
+                    android:drawablePadding="6dp"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:layout_gravity="end"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"
+                    android:contentDescription="심박수 집중 화면 진입"/>
+
+                <!-- 상단: 현재 HR | N초 평균 HR -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:weightSum="2"
+                    android:layout_marginTop="8dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/tvMedHrInstant"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="--"
+                            android:textSize="60sp"
+                            android:textColor="@color/hr_neon_red"
+                            android:textStyle="bold"
+                            android:fontFamily="sans-serif-condensed-light"
+                            android:includeFontPadding="false"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="현재 BPM"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.1"
+                            android:textAllCaps="true"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="72dp"
+                        android:background="@color/surface_variant"
+                        android:layout_gravity="center_vertical"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/tvMedHrAvg"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="--"
+                            android:textSize="60sp"
+                            android:textColor="@color/pace_electric_blue"
+                            android:textStyle="bold"
+                            android:fontFamily="sans-serif-condensed-light"
+                            android:includeFontPadding="false"/>
+
+                        <TextView
+                            android:id="@+id/tvMedHrAvgLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="10초 평균"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.1"
+                            android:textAllCaps="true"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- HR 평균 윈도우 슬라이더 -->
+                <SeekBar
+                    android:id="@+id/seekMeditationHrAvg"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="9"
+                    android:progress="9"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="20dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"/>
+
+                <!-- 호흡 진행 중 Phase 표시 + 양방향 게이지 -->
+                <LinearLayout
+                    android:id="@+id/breathPhaseContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    android:layout_marginBottom="20dp">
+
+                    <TextView
+                        android:id="@+id/tvBreathPhase"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="--"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary"
+                        android:letterSpacing="0.1"
+                        android:layout_marginBottom="12dp"/>
+
+                    <!-- 양끝 tick 마커 + 중앙 bar 영역 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginStart="24dp"
+                        android:layout_marginEnd="24dp">
+
+                        <!-- 왼쪽 endpoint tick -->
+                        <View
+                            android:layout_width="2dp"
+                            android:layout_height="14dp"
+                            android:background="@color/text_secondary"/>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <!-- 흰선 (호흡 상태: 들숨 시 중앙→바깥 확장, 날숨 시 바깥→중앙 수렴) -->
+                            <View
+                                android:id="@+id/breathWhiteBar"
+                                android:layout_width="match_parent"
+                                android:layout_height="3dp"
+                                android:background="@color/text_primary"
+                                android:scaleX="0"/>
+
+                            <!-- 파란선 (홀드 진행: 들숨 후엔 바깥→중앙, 날숨 후엔 중앙→바깥) -->
+                            <View
+                                android:id="@+id/breathBlueBar"
+                                android:layout_width="match_parent"
+                                android:layout_height="3dp"
+                                android:background="@color/pace_electric_blue"
+                                android:layout_marginTop="4dp"
+                                android:scaleX="0"/>
+                        </LinearLayout>
+
+                        <!-- 오른쪽 endpoint tick -->
+                        <View
+                            android:layout_width="2dp"
+                            android:layout_height="14dp"
+                            android:background="@color/text_secondary"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvBreathPhaseRemaining"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textSize="12sp"
+                        android:textColor="@color/text_tertiary"
+                        android:layout_marginTop="6dp"/>
+                </LinearLayout>
+
+                <!-- 구분선 -->
+                <View
+                    android:layout_width="60dp"
+                    android:layout_height="2dp"
+                    android:background="@color/surface_variant"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="24dp"/>
+
+                <!-- 하단: 이전 1분 평균 | 현재 1분 평균 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:weightSum="2">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/tvMedPrevMinute"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="--"
+                            android:textSize="36sp"
+                            android:textColor="@color/text_secondary"
+                            android:textStyle="bold"
+                            android:fontFamily="sans-serif-condensed-light"
+                            android:includeFontPadding="false"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="이전 1분 평균"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.1"
+                            android:textAllCaps="true"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="48dp"
+                        android:background="@color/surface_variant"
+                        android:layout_gravity="center_vertical"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/tvMedCurrMinute"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="--"
+                            android:textSize="36sp"
+                            android:textColor="@color/accent_green"
+                            android:textStyle="bold"
+                            android:fontFamily="sans-serif-condensed-light"
+                            android:includeFontPadding="false"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="현재 1분 평균"
+                            android:textSize="12sp"
+                            android:textColor="@color/text_secondary"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.1"
+                            android:textAllCaps="true"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvMedStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="연결 대기"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginTop="20dp"
+                    android:layout_gravity="center_horizontal"/>
+
+                <TextView
+                    android:id="@+id/tvMedTimer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="00:00:00"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_tertiary"
+                    android:fontFamily="sans-serif-light"
+                    android:layout_marginTop="4dp"
+                    android:layout_gravity="center_horizontal"
+                    android:contentDescription="세션 경과 시간"/>
+
+                <Button
+                    android:id="@+id/btnMedRetry"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="다시 시도"
+                    android:textSize="12sp"
+                    android:textColor="@color/pace_electric_blue"
+                    android:background="?attr/selectableItemBackground"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:visibility="gone"
+                    android:layout_marginTop="4dp"
+                    android:layout_gravity="center_horizontal"/>
+            </LinearLayout>
+
+            <!-- ─── 센서 컨트롤 섹션 ─── -->
+            <TextView
+                style="@style/SectionLabel"
+                android:text="음성 안내"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="12dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="20dp"
+                android:layout_marginBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="20dp">
+
+                    <ToggleButton
+                        android:id="@+id/btnHR"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="52dp"
+                        android:textOn="심박수"
+                        android:textOff="심박수"
+                        android:textColor="@color/white"
+                        android:textSize="13sp"
+                        android:background="@drawable/selector_toggle"
+                        android:layout_marginEnd="@dimen/space_s"/>
+
+                    <ToggleButton
+                        android:id="@+id/btnPace"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="52dp"
+                        android:textOn="페이스"
+                        android:textOff="페이스"
+                        android:textColor="@color/white"
+                        android:textSize="13sp"
+                        android:background="@drawable/selector_toggle"
+                        android:layout_marginEnd="@dimen/space_s"/>
+
+                    <ToggleButton
+                        android:id="@+id/btnCadence"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="52dp"
+                        android:textOn="케이던스"
+                        android:textOff="케이던스"
+                        android:textColor="@color/white"
+                        android:textSize="13sp"
+                        android:background="@drawable/selector_toggle"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="16dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="음성 안내 간격"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"/>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <Button
+                            android:id="@+id/btnIntervalMinus"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:text="−"
+                            android:textColor="@color/white"
+                            android:background="@drawable/bg_stepper_btn"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:padding="0dp"
+                            android:contentDescription="안내 간격 감소"/>
+
+                        <EditText
+                            android:id="@+id/etInterval"
+                            android:layout_width="56dp"
+                            android:layout_height="40dp"
+                            android:inputType="number"
+                            android:imeOptions="actionDone"
+                            android:text="3"
+                            android:textColor="@color/white"
+                            android:textAlignment="center"
+                            android:background="@drawable/bg_numberbox"
+                            android:layout_marginStart="8dp"
+                            android:layout_marginEnd="8dp"/>
+
+                        <Button
+                            android:id="@+id/btnIntervalPlus"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:text="+"
+                            android:textColor="@color/white"
+                            android:background="@drawable/bg_stepper_btn"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"
+                            android:padding="0dp"
+                            android:contentDescription="안내 간격 증가"/>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="안내 언어"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"/>
+
+                    <Spinner
+                        android:id="@+id/spinnerLanguage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAlignment="viewEnd"
+                        android:backgroundTint="@color/text_secondary"
+                        android:popupBackground="@color/surface_dark"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ─── 코치 & 메트로놈 섹션 ─── -->
+            <TextView
+                android:id="@+id/tvTrainingSection"
+                style="@style/SectionLabel"
+                android:text="운동 도구"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="12dp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="20dp"
+                android:layout_marginBottom="32dp">
+
+                <LinearLayout
+                    android:id="@+id/coachRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="20dp">
+
+                    <ToggleButton
+                        android:id="@+id/btnCoach"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="52dp"
+                        android:textOn="보이스 코치 ON"
+                        android:textOff="보이스 코치 OFF"
+                        android:textColor="@color/white"
+                        android:background="@drawable/selector_toggle"/>
+
+                    <ImageButton
+                        android:id="@+id/btnCoachSettings"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@android:drawable/ic_menu_edit"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        app:tint="@color/text_secondary"
+                        android:layout_marginStart="12dp"
+                        android:contentDescription="보이스 코치 설정"/>
+                </LinearLayout>
+
+                <!-- 메트로놈 패널 — 골프 모드 ON 시 숨김 -->
+                <LinearLayout
+                    android:id="@+id/metronomePanel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/surface_variant"
+                        android:layout_marginBottom="20dp"/>
+
+                    <ToggleButton
+                        android:id="@+id/btnMetronome"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:textOn="메트로놈 ON"
+                        android:textOff="메트로놈 OFF"
+                        android:textColor="@color/white"
+                        android:background="@drawable/selector_toggle"
+                        android:layout_marginBottom="16dp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="박자 (BPM)"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"/>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <Button
+                                android:id="@+id/btnBpmMinus"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:text="−"
+                                android:textColor="@color/white"
+                                android:background="@drawable/bg_stepper_btn"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:padding="0dp"
+                                android:contentDescription="박자 감소"/>
+
+                            <EditText
+                                android:id="@+id/etMetronomeBpm"
+                                android:layout_width="64dp"
+                                android:layout_height="40dp"
+                                android:inputType="number"
+                                android:imeOptions="actionDone"
+                                android:text="180"
+                                android:textColor="@color/white"
+                                android:textAlignment="center"
+                                android:background="@drawable/bg_numberbox"
+                                android:layout_marginStart="8dp"
+                                android:layout_marginEnd="8dp"/>
+
+                            <Button
+                                android:id="@+id/btnBpmPlus"
+                                android:layout_width="36dp"
+                                android:layout_height="36dp"
+                                android:text="+"
+                                android:textColor="@color/white"
+                                android:background="@drawable/bg_stepper_btn"
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+                                android:padding="0dp"
+                                android:contentDescription="박자 증가"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- ─── 골프 패널 (모드 탭에서 "골프" 선택 시만 표시) ─── -->
+                <LinearLayout
+                    android:id="@+id/golfPanel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:layout_marginTop="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="클럽 프리셋"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.1"
+                        android:layout_marginBottom="4dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="길게 눌러 BPM 편집"
+                        android:textColor="@color/text_tertiary"
+                        android:textSize="12sp"
+                        android:layout_marginBottom="10dp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="20dp">
+
+                        <Button
+                            android:id="@+id/btnClubDriver"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="56dp"
+                            android:text="드라이버\n76"
+                            android:textSize="12sp"
+                            android:textColor="@color/white"
+                            android:background="@drawable/bg_stepper_btn"
+                            android:lineSpacingExtra="1dp"
+                            android:padding="0dp"/>
+
+                        <Button
+                            android:id="@+id/btnClubIron"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="56dp"
+                            android:text="아이언\n90"
+                            android:textSize="12sp"
+                            android:textColor="@color/white"
+                            android:background="@drawable/bg_stepper_btn"
+                            android:lineSpacingExtra="1dp"
+                            android:layout_marginStart="8dp"
+                            android:padding="0dp"/>
+
+                        <Button
+                            android:id="@+id/btnClubWedge"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="56dp"
+                            android:text="웨지\n103"
+                            android:textSize="12sp"
+                            android:textColor="@color/white"
+                            android:background="@drawable/bg_stepper_btn"
+                            android:lineSpacingExtra="1dp"
+                            android:layout_marginStart="8dp"
+                            android:padding="0dp"/>
+                    </LinearLayout>
+
+                    <ToggleButton
+                        android:id="@+id/btnGolfSwing"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:textOn="스윙 연습 중지"
+                        android:textOff="스윙 연습 시작"
+                        android:textColor="@color/white"
+                        android:background="@drawable/selector_toggle"/>
+
+                    <!-- 시각 피드백 — 소리 없이 시각으로 박자 확인 -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/surface_variant"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginBottom="14dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="시각 피드백"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.1"
+                        android:layout_marginBottom="8dp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <CheckBox
+                            android:id="@+id/cbFlashLight"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="라이트"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:buttonTint="@color/accent_green"
+                            android:minHeight="48dp"
+                            android:contentDescription="후면 플래시로 박자 표시"/>
+
+                        <CheckBox
+                            android:id="@+id/cbFlashScreen"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="화면"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:buttonTint="@color/accent_green"
+                            android:minHeight="48dp"
+                            android:contentDescription="화면 깜빡임으로 박자 표시"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- ─── Meditation 패널 (모드 탭에서 "Meditation" 선택 시만 표시) ─── -->
+                <LinearLayout
+                    android:id="@+id/meditationPanel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="호흡 기법"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
+                        android:textAllCaps="true"
+                        android:letterSpacing="0.1"
+                        android:layout_marginBottom="2dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="길게 눌러 기법 설명"
+                        android:textColor="@color/text_tertiary"
+                        android:textSize="12sp"
+                        android:layout_marginBottom="10dp"/>
+
+                    <!-- 프리셋 라디오 (수동 그룹) -->
+                    <LinearLayout
+                        android:id="@+id/breathPresetList"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <RadioButton
+                            android:id="@+id/rbPresetBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="박스 호흡 (4-4-4-4)"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:buttonTint="@color/pace_electric_blue"
+                            android:paddingVertical="10dp"
+                            android:checked="true"/>
+
+                        <RadioButton
+                            android:id="@+id/rbPreset478"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="4-7-8 수면 기법"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:buttonTint="@color/pace_electric_blue"
+                            android:paddingVertical="10dp"/>
+
+                        <RadioButton
+                            android:id="@+id/rbPresetCoherent"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="분당 6회 (5-5)"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:buttonTint="@color/pace_electric_blue"
+                            android:paddingVertical="10dp"/>
+
+                        <RadioButton
+                            android:id="@+id/rbPresetLongExhale"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="긴 날숨 (4-8)"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:buttonTint="@color/pace_electric_blue"
+                            android:paddingVertical="10dp"/>
+
+                        <!-- 5번째 — 커스텀 + 연필 편집 아이콘 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+                            <RadioButton
+                                android:id="@+id/rbPresetCustom"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="wrap_content"
+                                android:text="커스텀"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp"
+                                android:buttonTint="@color/pace_electric_blue"
+                                android:paddingVertical="10dp"/>
+                            <ImageButton
+                                android:id="@+id/btnCustomEdit"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:src="@android:drawable/ic_menu_edit"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                app:tint="@color/text_secondary"
+                                android:contentDescription="커스텀 호흡 사이클 편집"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- 초 카운트 공용 체크박스 — 4개 프리셋 모두에 적용 -->
+                    <CheckBox
+                        android:id="@+id/cbBreathMetro"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="초 카운트 (매초 같은 톤으로 박자)"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"
+                        android:buttonTint="@color/accent_green"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="20dp"
+                        android:contentDescription="호흡 매초 박자 카운트"/>
+
+                    <ToggleButton
+                        android:id="@+id/btnBreathStart"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:textOn="호흡 중지"
+                        android:textOff="호흡 시작"
+                        android:textColor="@color/white"
+                        android:background="@drawable/selector_toggle"/>
+
+                    <!-- ─── 백색 소음 섹션 ─── -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/surface_variant"
+                        android:layout_marginTop="20dp"
+                        android:layout_marginBottom="14dp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="백색 소음"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp"
+                            android:textAllCaps="true"
+                            android:letterSpacing="0.1"/>
+                        <ImageButton
+                            android:id="@+id/btnNoiseEdit"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:src="@android:drawable/ic_menu_edit"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            app:tint="@color/text_secondary"
+                            android:contentDescription="커스텀 노이즈 주파수 설정"/>
+                    </LinearLayout>
+
+                    <RadioGroup
+                        android:id="@+id/noisePresetGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="10dp">
+                        <RadioButton
+                            android:id="@+id/rbNoiseWhite"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="화이트"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:buttonTint="@color/pace_electric_blue"
+                            android:checked="true"/>
+                        <RadioButton
+                            android:id="@+id/rbNoiseBrown"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="브라운"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:buttonTint="@color/pace_electric_blue"/>
+                        <RadioButton
+                            android:id="@+id/rbNoiseCustom"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="커스텀"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:buttonTint="@color/pace_electric_blue"/>
+                    </RadioGroup>
+
+                    <ToggleButton
+                        android:id="@+id/btnNoiseStart"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:textOn="소음 중지"
+                        android:textOff="소음 시작"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        android:background="@drawable/selector_toggle"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- ─── START / STOP ─── -->
             <Button
                 android:id="@+id/btnStart"
-                android:layout_width="200dp"
-                android:layout_height="60dp"
-                android:text="시작"
-                android:textSize="20sp"/>
+                android:layout_width="match_parent"
+                android:layout_height="72dp"
+                android:text="달리기 시작"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:letterSpacing="0.1"
+                android:background="@drawable/bg_start_button"
+                android:foreground="?attr/selectableItemBackground"
+                android:elevation="8dp"
+                android:stateListAnimator="@null"/>
 
         </LinearLayout>
 
     </ScrollView>
 
-    <ImageButton
-        android:id="@+id/btnSettings"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="top|end"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:src="@android:drawable/ic_menu_preferences"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:tint="#FFFFFF"
-        android:contentDescription="설정"/>
+</LinearLayout>
+
+    <!-- Meditation 몰입 모드 전체 화면 overlay — 터치 시 복귀 -->
+    <FrameLayout
+        android:id="@+id/focusOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background_deep"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        android:elevation="10dp"
+        android:contentDescription="터치하여 복귀">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp">
+
+            <!-- 현재 HR + N초 평균 (가로 나란히, 적당한 크기) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:weightSum="2">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tvFocusHrInstant"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="--"
+                        android:textSize="76sp"
+                        android:textColor="@color/hr_neon_red"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-condensed-light"
+                        android:includeFontPadding="false"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="현재 BPM"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"
+                        android:textAllCaps="true"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="80dp"
+                    android:background="@color/surface_variant"
+                    android:layout_gravity="center_vertical"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tvFocusHrAvg"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="--"
+                        android:textSize="76sp"
+                        android:textColor="@color/pace_electric_blue"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-condensed-light"
+                        android:includeFontPadding="false"/>
+
+                    <TextView
+                        android:id="@+id/tvFocusHrAvgLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="10초 평균"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"
+                        android:textAllCaps="true"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- HR 그래프 (1분창 기본, 핀치/더블탭 인터랙션) -->
+            <com.jecheon.voicecoach.HrGraphView
+                android:id="@+id/focusHrGraph"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginTop="20dp"
+                android:contentDescription="심박수 그래프 — 핀치로 시간축 확대/축소, 더블탭으로 60초 복원"/>
+
+            <!-- 호흡 phase 게이지 (호흡 진행 중일 때만 visible) -->
+            <LinearLayout
+                android:id="@+id/focusBreathPhaseContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone"
+                android:layout_marginTop="36dp">
+
+                <TextView
+                    android:id="@+id/tvFocusBreathPhase"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:letterSpacing="0.1"
+                    android:layout_marginBottom="16dp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginStart="32dp"
+                    android:layout_marginEnd="32dp">
+
+                    <View
+                        android:layout_width="3dp"
+                        android:layout_height="20dp"
+                        android:background="@color/text_secondary"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <View
+                            android:id="@+id/focusBreathWhiteBar"
+                            android:layout_width="match_parent"
+                            android:layout_height="4dp"
+                            android:background="@color/text_primary"
+                            android:scaleX="0"/>
+
+                        <View
+                            android:id="@+id/focusBreathBlueBar"
+                            android:layout_width="match_parent"
+                            android:layout_height="4dp"
+                            android:background="@color/pace_electric_blue"
+                            android:layout_marginTop="6dp"
+                            android:scaleX="0"/>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="3dp"
+                        android:layout_height="20dp"
+                        android:background="@color/text_secondary"/>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvFocusBreathPhaseRemaining"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="12sp"
+                    android:textColor="@color/text_tertiary"
+                    android:layout_marginTop="8dp"
+                    android:layout_gravity="center_horizontal"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="80dp"
+                android:layout_height="2dp"
+                android:background="@color/surface_variant"
+                android:layout_marginTop="40dp"
+                android:layout_marginBottom="24dp"
+                android:layout_gravity="center_horizontal"/>
+
+            <!-- 1분 평균 비교 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tvFocusPrev"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="--"
+                        android:textSize="48sp"
+                        android:textColor="@color/text_secondary"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-condensed-light"
+                        android:includeFontPadding="false"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="이전 1분 평균"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"
+                        android:textAllCaps="true"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tvFocusCurr"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="--"
+                        android:textSize="48sp"
+                        android:textColor="@color/accent_green"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-condensed-light"
+                        android:includeFontPadding="false"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="현재 1분 평균"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"
+                        android:textAllCaps="true"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- 자동 종료 타이머 (간단 +/- ) -->
+            <TextView
+                android:id="@+id/tvAutoStopLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="−분 −초 뒤 자동 앱 종료"
+                android:textSize="12sp"
+                android:textColor="@color/text_tertiary"
+                android:layout_marginTop="36dp"
+                android:layout_gravity="center_horizontal"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="6dp">
+                <Button
+                    android:id="@+id/btnAutoStopMinus"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:text="−"
+                    android:textSize="20sp"
+                    android:padding="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:contentDescription="자동 종료 시간 1분 감소 (또는 해제)"/>
+                <View
+                    android:layout_width="20dp"
+                    android:layout_height="1dp"/>
+                <Button
+                    android:id="@+id/btnAutoStopPlus"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:text="+"
+                    android:textSize="20sp"
+                    android:padding="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:contentDescription="자동 종료 시간 1분 추가"/>
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- 골프 화면 dim 모드용 검정 overlay — 10초 후 활성, 터치하면 해제 -->
+    <View
+        android:id="@+id/dimOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black"
+        android:alpha="0"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="false"
+        android:elevation="11dp"
+        android:contentDescription="터치하여 화면 복귀"/>
+
+    <!-- 골프 "화면 플래시" 용 전체 화면 overlay — 터치 패스스루, dim 위에서 비트 깜빡 -->
+    <View
+        android:id="@+id/flashOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:alpha="0"
+        android:clickable="false"
+        android:focusable="false"
+        android:elevation="12dp"/>
 
 </FrameLayout>

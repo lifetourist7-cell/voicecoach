@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_deep">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/space_xl"
+        android:paddingEnd="@dimen/space_xl"
+        android:paddingTop="@dimen/space_m"
+        android:paddingBottom="@dimen/space_xl">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="코치 설정"
+            android:textAppearance="@style/TextAppearance.VC.Headline"
+            android:layout_marginBottom="@dimen/space_xl"/>
+
+        <!-- 상한 심박수 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="상한 심박수"
+            android:textAppearance="@style/TextAppearance.VC.Title"
+            android:layout_marginBottom="@dimen/space_s"/>
+
+        <CheckBox
+            android:id="@+id/cbUpperEnabled"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="활성화"
+            android:textAppearance="@style/TextAppearance.VC.Body"
+            android:buttonTint="@color/pace_electric_blue"
+            android:layout_marginBottom="@dimen/space_s"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/space_l">
+
+            <Button
+                android:id="@+id/btnUpperMinus"
+                style="@style/Widget.VC.Button.Stepper"
+                android:text="−"/>
+
+            <EditText
+                android:id="@+id/etUpperBpm"
+                style="@style/Widget.VC.EditText.Number"
+                android:layout_width="80dp"
+                android:layout_marginStart="@dimen/space_s"
+                android:layout_marginEnd="@dimen/space_s"
+                android:text="180"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="BPM "
+                android:textAppearance="@style/TextAppearance.VC.Title"/>
+
+            <Button
+                android:id="@+id/btnUpperPlus"
+                style="@style/Widget.VC.Button.Stepper"
+                android:text="+"
+                android:layout_marginStart="@dimen/space_s"/>
+
+        </LinearLayout>
+
+        <!-- 하한 심박수 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="하한 심박수"
+            android:textAppearance="@style/TextAppearance.VC.Title"
+            android:layout_marginBottom="@dimen/space_s"/>
+
+        <CheckBox
+            android:id="@+id/cbLowerEnabled"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="활성화"
+            android:textAppearance="@style/TextAppearance.VC.Body"
+            android:buttonTint="@color/pace_electric_blue"
+            android:layout_marginBottom="@dimen/space_s"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/space_xl">
+
+            <Button
+                android:id="@+id/btnLowerMinus"
+                style="@style/Widget.VC.Button.Stepper"
+                android:text="−"/>
+
+            <EditText
+                android:id="@+id/etLowerBpm"
+                style="@style/Widget.VC.EditText.Number"
+                android:layout_width="80dp"
+                android:layout_marginStart="@dimen/space_s"
+                android:layout_marginEnd="@dimen/space_s"
+                android:text="120"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="BPM "
+                android:textAppearance="@style/TextAppearance.VC.Title"/>
+
+            <Button
+                android:id="@+id/btnLowerPlus"
+                style="@style/Widget.VC.Button.Stepper"
+                android:text="+"
+                android:layout_marginStart="@dimen/space_s"/>
+
+        </LinearLayout>
+
+        <!-- 재경고 간격 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="재경고 간격"
+            android:textAppearance="@style/TextAppearance.VC.Title"
+            android:layout_marginBottom="@dimen/space_s"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/space_s">
+
+            <Button
+                android:id="@+id/btnRealertMinus"
+                style="@style/Widget.VC.Button.Stepper"
+                android:text="−"/>
+
+            <EditText
+                android:id="@+id/etRealertInterval"
+                style="@style/Widget.VC.EditText.Number"
+                android:layout_width="80dp"
+                android:layout_marginStart="@dimen/space_s"
+                android:layout_marginEnd="@dimen/space_s"
+                android:text="30"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="초 "
+                android:textAppearance="@style/TextAppearance.VC.Title"/>
+
+            <Button
+                android:id="@+id/btnRealertPlus"
+                style="@style/Widget.VC.Button.Stepper"
+                android:text="+"
+                android:layout_marginStart="@dimen/space_s"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="임계값을 벗어난 상태가 지속되는 동안\n이 간격으로 경고를 반복합니다. (5~120초)"
+            android:textAppearance="@style/TextAppearance.VC.Caption"
+            android:layout_marginBottom="@dimen/space_xl"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="※ 상한/하한은 독립적으로 활성화할 수 있습니다.\n※ 설정 변경은 다음 '시작'부터 적용됩니다."
+            android:textAppearance="@style/TextAppearance.VC.Caption"/>
+
+    </LinearLayout>
+
+</ScrollView>

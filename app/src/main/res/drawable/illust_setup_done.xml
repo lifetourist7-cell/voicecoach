@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 셋업 완료 일러스트 — 체크마크 + 펄스 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="160dp"
+    android:height="160dp"
+    android:viewportWidth="160"
+    android:viewportHeight="160">
+
+    <!-- 외곽 원 (그린 글로우) -->
+    <path
+        android:fillColor="@color/accent_green"
+        android:fillAlpha="0.15"
+        android:pathData="M80,80 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0" />
+
+    <!-- 중심 원 -->
+    <path
+        android:fillColor="@color/accent_green"
+        android:pathData="M80,80 m-50,0 a50,50 0 1,0 100,0 a50,50 0 1,0 -100,0" />
+
+    <!-- 체크마크 (큰) -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/text_primary"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M58,80 L74,96 L104,66" />
+</vector>

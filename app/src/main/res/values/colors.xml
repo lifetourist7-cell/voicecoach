@@ -2,4 +2,35 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- ─── 서피스 (다크 톤) ─── -->
+    <color name="background_deep">#000000</color>
+    <color name="surface_dark">#1C1C1E</color>
+    <color name="surface_variant">#2C2C2E</color>
+    <color name="surface_elevated">#2C2C2E</color>  <!-- 카드 위 카드 — surface_variant 와 같음 (semantic alias) -->
+
+    <!-- ─── 액센트 ─── -->
+    <color name="hr_neon_red">#FF2D55</color>
+    <color name="hr_neon_red_light">#FF375F</color>  <!-- gradient 끝 -->
+    <color name="pace_electric_blue">#007AFF</color>
+    <color name="accent_green">#34C759</color>
+
+    <!-- ─── 텍스트 ─── -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#8E8E93</color>
+    <color name="text_tertiary">#48484A</color>
+
+    <!-- ─── Semantic — State ─── -->
+    <color name="error">#FF3B30</color>
+    <color name="warning">#FF9500</color>
+    <color name="success">#34C759</color>           <!-- accent_green alias -->
+    <color name="info">#007AFF</color>              <!-- pace_electric_blue alias -->
+
+    <!-- ─── Border / Divider ─── -->
+    <color name="border_subtle">#1AFFFFFF</color>   <!-- 카드 테두리 -->
+    <color name="border_strong">#33FFFFFF</color>
+
+    <!-- ─── State / Ripple ─── -->
+    <color name="ripple_light">#20FFFFFF</color>
+    <color name="overlay_dim">#80000000</color>     <!-- 50% black -->
 </resources>

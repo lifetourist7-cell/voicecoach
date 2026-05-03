@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        ─── VoiceCoach 컴포넌트 스타일 ───
+        모든 인터랙티브 컴포넌트는 여기서 정의된 스타일을 사용해야 합니다.
+        인라인 스타일링 금지.
+    -->
+
+    <!-- ─── 버튼 ─── -->
+
+    <!-- 메인 CTA — 필드, 빨강 그라데이션, 큰 높이 (시작/재시도) -->
+    <style name="Widget.VC.Button.Primary" parent="Widget.AppCompat.Button">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">@dimen/button_height</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:background">@drawable/bg_start_button</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textAppearance">@style/TextAppearance.VC.Label</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:fontFamily">@font/pretendard</item>
+        <item name="android:paddingStart">@dimen/space_l</item>
+        <item name="android:paddingEnd">@dimen/space_l</item>
+    </style>
+
+    <!-- 정지 / 비활성 보조 액션 — 외곽선 -->
+    <style name="Widget.VC.Button.Secondary" parent="Widget.AppCompat.Button">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">@dimen/button_height</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:background">@drawable/bg_stop_button</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textAppearance">@style/TextAppearance.VC.Label</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:fontFamily">@font/pretendard</item>
+        <item name="android:paddingStart">@dimen/space_l</item>
+        <item name="android:paddingEnd">@dimen/space_l</item>
+    </style>
+
+    <!-- 텍스트 액션 (예: 다시 시도, 자세히 보기) -->
+    <style name="Widget.VC.Button.Text" parent="Widget.AppCompat.Button.Borderless">
+        <!-- layout_width 명시 — Android 14+ 일부 OEM (Samsung One UI) 에서 누락 시 InflateException -->
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/pace_electric_blue</item>
+        <item name="android:textAppearance">@style/TextAppearance.VC.Label</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:fontFamily">@font/pretendard</item>
+    </style>
+
+    <!-- 스테퍼 ± (48x48 원형, 접근성 터치 영역 보장) -->
+    <style name="Widget.VC.Button.Stepper" parent="Widget.AppCompat.Button">
+        <item name="android:layout_width">@dimen/touch_target</item>
+        <item name="android:layout_height">@dimen/touch_target</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:padding">0dp</item>
+        <item name="android:background">@drawable/bg_stepper_btn</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textAppearance">@style/TextAppearance.VC.Title</item>
+        <item name="android:fontFamily">@font/pretendard</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <!-- 작은 스테퍼 ± (40x40, 화면 밀도가 빡빡한 곳용) -->
+    <style name="Widget.VC.Button.Stepper.Compact">
+        <item name="android:layout_width">@dimen/icon_button_size</item>
+        <item name="android:layout_height">@dimen/icon_button_size</item>
+    </style>
+
+    <!-- 아이콘 버튼 (40x40, 무경계) -->
+    <style name="Widget.VC.Button.Icon" parent="Widget.AppCompat.ImageButton">
+        <item name="android:layout_width">@dimen/icon_button_size</item>
+        <item name="android:layout_height">@dimen/icon_button_size</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:scaleType">centerInside</item>
+    </style>
+
+    <!-- ─── 입력 ─── -->
+
+    <!-- 숫자 박스 (BPM, 인터벌, 시간 등) -->
+    <style name="Widget.VC.EditText.Number" parent="Widget.AppCompat.EditText">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/bg_numberbox</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textAppearance">@style/TextAppearance.VC.Body</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/pretendard</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:gravity">center</item>
+        <item name="android:inputType">number</item>
+        <item name="android:imeOptions">actionDone</item>
+        <item name="android:paddingStart">@dimen/space_s</item>
+        <item name="android:paddingEnd">@dimen/space_s</item>
+        <item name="android:paddingTop">@dimen/space_s</item>
+        <item name="android:paddingBottom">@dimen/space_s</item>
+    </style>
+
+    <!-- ─── 카드 ─── -->
+
+    <!-- 데이터 카드 — bg_card 적용된 LinearLayout 용 단축 (style 만 적용) -->
+    <style name="Widget.VC.Card" parent="android:Widget">
+        <item name="android:background">@drawable/bg_card</item>
+        <item name="android:padding">@dimen/space_l</item>
+    </style>
+
+    <!-- 정보 카드 (작은) — 도움말 등 -->
+    <style name="Widget.VC.Card.Info" parent="Widget.VC.Card">
+        <item name="android:padding">@dimen/space_m</item>
+    </style>
+
+    <!-- ─── 토글 ─── -->
+
+    <style name="Widget.VC.Toggle" parent="android:Widget.Button.Toggle">
+        <item name="android:layout_height">@dimen/button_height_compact</item>
+        <item name="android:minHeight">@dimen/button_height_compact</item>
+        <item name="android:background">@drawable/selector_toggle</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textAppearance">@style/TextAppearance.VC.Label</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:fontFamily">@font/pretendard</item>
+        <item name="android:textOff">OFF</item>
+        <item name="android:textOn">ON</item>
+        <item name="android:paddingStart">@dimen/space_m</item>
+        <item name="android:paddingEnd">@dimen/space_m</item>
+    </style>
+</resources>

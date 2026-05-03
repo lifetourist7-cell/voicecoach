@@ -1,7 +1,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!--
+        앱은 항상 어둡게 디자인됨 — day/night 모두 동일한 다크 톤.
+        values/themes.xml 의 Base.Theme.HRMonitor 가 모든 토큰을 관리.
+        여기서는 night 모드에서 추가로 오버라이드할 게 없으므로 빈 stub 만 둠.
+    -->
     <style name="Base.Theme.HRMonitor" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="android:fontFamily">@font/pretendard</item>
+        <item name="fontFamily">@font/pretendard</item>
+
+        <item name="colorPrimary">@color/hr_neon_red</item>
+        <item name="colorOnPrimary">@color/text_primary</item>
+        <item name="colorSecondary">@color/pace_electric_blue</item>
+        <item name="colorOnSecondary">@color/text_primary</item>
+        <item name="colorError">@color/error</item>
+        <item name="android:colorBackground">@color/background_deep</item>
+        <item name="colorSurface">@color/surface_dark</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorTertiary">@color/text_tertiary</item>
     </style>
 </resources>

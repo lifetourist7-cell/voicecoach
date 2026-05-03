@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 워치 선택 일러스트 — 두 워치 (BLE + WearOS) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="160dp"
+    android:height="120dp"
+    android:viewportWidth="160"
+    android:viewportHeight="120">
+
+    <!-- 좌측 워치 (BLE 송출, 원형) -->
+    <path
+        android:fillColor="@color/text_secondary"
+        android:pathData="M50,20 L70,20 L68,32 L52,32 Z" />
+    <path
+        android:fillColor="@color/surface_variant"
+        android:strokeColor="@color/text_secondary"
+        android:strokeWidth="2"
+        android:pathData="M60,60 m-22,0 a22,22 0 1,0 44,0 a22,22 0 1,0 -44,0" />
+    <path
+        android:fillColor="@color/text_secondary"
+        android:pathData="M50,88 L70,88 L68,100 L52,100 Z" />
+    <!-- BLE 신호 -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/pace_electric_blue"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M82,55 q5,-5 10,0 M84,60 q3,-3 6,0" />
+
+    <!-- 우측 워치 (WearOS, 사각) -->
+    <path
+        android:fillColor="@color/text_secondary"
+        android:pathData="M105,20 L125,20 L123,32 L107,32 Z" />
+    <path
+        android:fillColor="@color/surface_variant"
+        android:strokeColor="@color/text_secondary"
+        android:strokeWidth="2"
+        android:pathData="M93,38 L127,38 L127,82 L93,82 Z" />
+    <!-- 화면 안 하트 -->
+    <path
+        android:fillColor="@color/hr_neon_red"
+        android:pathData="M110,62
+            C110,62 102,57 99,52
+            C97,49 99,45 102,45
+            C105,45 108,47 110,50
+            C112,47 115,45 118,45
+            C121,45 123,49 121,52
+            C118,57 110,62 110,62 Z" />
+    <path
+        android:fillColor="@color/text_secondary"
+        android:pathData="M105,88 L125,88 L123,100 L107,100 Z" />
+</vector>

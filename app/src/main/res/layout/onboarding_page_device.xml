@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:paddingStart="@dimen/space_l"
+    android:paddingEnd="@dimen/space_l"
+    android:paddingTop="@dimen/space_xl">
+
+    <ImageView
+        android:layout_width="160dp"
+        android:layout_height="120dp"
+        android:src="@drawable/illust_watch_choose"
+        android:layout_marginBottom="@dimen/space_l"
+        android:contentDescription="워치 선택"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="어떤 워치를 사용하시나요?"
+        android:textAppearance="@style/TextAppearance.VC.Headline"
+        android:textAlignment="center"
+        android:layout_marginBottom="@dimen/space_s"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="선택하시면 셋업 안내를 도와드릴게요"
+        android:textAppearance="@style/TextAppearance.VC.Caption"
+        android:textAlignment="center"
+        android:layout_marginBottom="@dimen/space_xl"/>
+
+    <RadioGroup
+        android:id="@+id/deviceTypeGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- BLE 카드 -->
+        <RadioButton
+            android:id="@+id/rbDeviceBle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:button="@null"
+            android:background="@drawable/selector_toggle"
+            android:padding="@dimen/space_m"
+            android:layout_marginBottom="@dimen/space_s"
+            android:checked="true"
+            android:gravity="start|center_vertical"
+            android:text="BLE 송출 워치\n가민 / 폴라 / 순토"
+            android:textAppearance="@style/TextAppearance.VC.Body"
+            android:textColor="@color/text_primary"
+            android:lineSpacingExtra="2dp"/>
+
+        <!-- Wear OS 카드 -->
+        <RadioButton
+            android:id="@+id/rbDeviceWear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:button="@null"
+            android:background="@drawable/selector_toggle"
+            android:padding="@dimen/space_m"
+            android:layout_marginBottom="@dimen/space_s"
+            android:gravity="start|center_vertical"
+            android:text="Wear OS 워치\n갤럭시워치 4 이상 / 픽셀워치"
+            android:textAppearance="@style/TextAppearance.VC.Body"
+            android:textColor="@color/text_primary"
+            android:lineSpacingExtra="2dp"/>
+
+        <!-- 워치 없음 카드 -->
+        <RadioButton
+            android:id="@+id/rbDeviceNone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:button="@null"
+            android:background="@drawable/selector_toggle"
+            android:padding="@dimen/space_m"
+            android:gravity="start|center_vertical"
+            android:text="워치 없음\n메트로놈 / 호흡 가이드만 사용"
+            android:textAppearance="@style/TextAppearance.VC.Body"
+            android:textColor="@color/text_primary"
+            android:lineSpacingExtra="2dp"/>
+    </RadioGroup>
+</LinearLayout>

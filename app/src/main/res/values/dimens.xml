@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ─── Spacing — 8dp 그리드 ─── -->
+    <dimen name="space_xs">4dp</dimen>
+    <dimen name="space_s">8dp</dimen>
+    <dimen name="space_m">16dp</dimen>
+    <dimen name="space_l">24dp</dimen>
+    <dimen name="space_xl">32dp</dimen>
+    <dimen name="space_2xl">48dp</dimen>
+    <dimen name="space_3xl">64dp</dimen>
+
+    <!-- ─── Corner radius — 3-tier ─── -->
+    <dimen name="radius_s">8dp</dimen>
+    <dimen name="radius_m">16dp</dimen>
+    <dimen name="radius_l">24dp</dimen>
+    <dimen name="radius_pill">999dp</dimen>
+
+    <!-- ─── Sizes ─── -->
+    <dimen name="touch_target">48dp</dimen>
+    <dimen name="button_height">52dp</dimen>
+    <dimen name="button_height_compact">40dp</dimen>
+    <dimen name="icon_button_size">40dp</dimen>
+    <dimen name="icon_size">24dp</dimen>
+    <dimen name="icon_size_s">18dp</dimen>
+    <dimen name="icon_size_l">32dp</dimen>
+
+    <!-- ─── Stroke ─── -->
+    <dimen name="stroke_thin">1dp</dimen>
+    <dimen name="stroke_medium">2dp</dimen>
+</resources>

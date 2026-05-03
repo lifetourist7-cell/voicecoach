@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:paddingStart="@dimen/space_xl"
+    android:paddingEnd="@dimen/space_xl"
+    android:paddingTop="@dimen/space_xl">
+
+    <ImageView
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:src="@drawable/illust_welcome"
+        android:layout_marginBottom="@dimen/space_xl"
+        android:contentDescription="VoiceCoach 로고"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="VoiceCoach 에 오신 것을 환영합니다"
+        android:textAppearance="@style/TextAppearance.VC.Headline"
+        android:textAlignment="center"
+        android:layout_marginBottom="@dimen/space_m"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="워치와 연결해서 심박수와 페이스를 음성으로 안내합니다."
+        android:textAppearance="@style/TextAppearance.VC.Body"
+        android:textColor="@color/text_secondary"
+        android:textAlignment="center"
+        android:layout_marginBottom="@dimen/space_xl"/>
+
+    <!-- 3개 핵심 기능 bullets -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="@dimen/space_m">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="•"
+                android:textAppearance="@style/TextAppearance.VC.Title"
+                android:textColor="@color/hr_neon_red"
+                android:layout_marginEnd="@dimen/space_s"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="달리기"
+                    android:textAppearance="@style/TextAppearance.VC.Label"
+                    android:textStyle="bold"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="심박수 / 페이스 실시간 안내 + 보이스 코치"
+                    android:textAppearance="@style/TextAppearance.VC.Caption"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="@dimen/space_m">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="•"
+                android:textAppearance="@style/TextAppearance.VC.Title"
+                android:textColor="@color/hr_neon_red"
+                android:layout_marginEnd="@dimen/space_s"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="골프"
+                    android:textAppearance="@style/TextAppearance.VC.Label"
+                    android:textStyle="bold"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="3:1 템포 메트로놈 + 클럽 프리셋"
+                    android:textAppearance="@style/TextAppearance.VC.Caption"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="•"
+                android:textAppearance="@style/TextAppearance.VC.Title"
+                android:textColor="@color/hr_neon_red"
+                android:layout_marginEnd="@dimen/space_s"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Meditation"
+                    android:textAppearance="@style/TextAppearance.VC.Label"
+                    android:textStyle="bold"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="4가지 호흡 기법 + 1분 평균 심박수"
+                    android:textAppearance="@style/TextAppearance.VC.Caption"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

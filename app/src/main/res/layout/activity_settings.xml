@@ -2,84 +2,370 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000">
+    android:background="@color/background_deep"
+    android:scrollbars="none"
+    android:overScrollMode="never">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingStart="32dp"
-        android:paddingEnd="32dp"
-        android:paddingTop="48dp"
-        android:paddingBottom="32dp">
+        android:paddingStart="@dimen/space_l"
+        android:paddingEnd="@dimen/space_l"
+        android:paddingTop="@dimen/space_l"
+        android:paddingBottom="@dimen/space_2xl">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="설정"
-            android:textSize="32sp"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:layout_marginBottom="32dp"/>
+            android:textAppearance="@style/TextAppearance.VC.Headline"
+            android:layout_marginBottom="@dimen/space_xl"/>
 
+        <!-- ═══ 음성 안내 ═══ -->
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="TTS 음량 (심박수 / 페이스)"
-            android:textSize="18sp"
-            android:textColor="#FFFFFF"
-            android:layout_marginBottom="8dp"/>
+            style="@style/SectionLabel"
+            android:text="음성 안내"/>
 
-        <TextView
-            android:id="@+id/tvTtsVolume"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="100%"
-            android:textSize="16sp"
-            android:textColor="#44AAFF"
-            android:layout_marginBottom="4dp"/>
-
-        <SeekBar
-            android:id="@+id/seekTtsVolume"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="100"
-            android:layout_marginBottom="32dp"/>
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="@dimen/space_l"
+            android:layout_marginBottom="@dimen/space_l">
 
+            <!-- ── TTS 음량 슬라이더 ── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="@dimen/space_xs">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="음량"
+                    android:textAppearance="@style/TextAppearance.VC.Body"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/tvTtsVolume"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="100%"
+                    android:textAppearance="@style/TextAppearance.VC.Body"
+                    android:textColor="@color/pace_electric_blue"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/seekTtsVolume"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:progress="100"
+                android:layout_marginBottom="@dimen/space_xs"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="음성 안내가 재생되는 동안 다른 미디어 (음악 / 유튜브) 가 자동으로 작아집니다 (audio ducking). 시스템 미디어 볼륨 자체는 변경되지 않습니다."
+                android:textAppearance="@style/TextAppearance.VC.Caption"
+                android:layout_marginBottom="@dimen/space_l"/>
+
+            <!-- 구분선 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/stroke_thin"
+                android:background="@color/border_subtle"
+                android:layout_marginBottom="@dimen/space_l"/>
+
+            <!-- ── 정보 이름 포함 ── -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="정보 이름 포함"
+                android:textAppearance="@style/TextAppearance.VC.Body"
+                android:textStyle="bold"
+                android:layout_marginBottom="@dimen/space_xs"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ON: '심박수 165' / OFF: '165'"
+                android:textAppearance="@style/TextAppearance.VC.Caption"
+                android:layout_marginBottom="@dimen/space_s"/>
+
+            <CheckBox
+                android:id="@+id/cbTtsLabelHr"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="심박수"
+                android:textAppearance="@style/TextAppearance.VC.Body"
+                android:buttonTint="@color/pace_electric_blue"/>
+
+            <CheckBox
+                android:id="@+id/cbTtsLabelPace"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="페이스"
+                android:textAppearance="@style/TextAppearance.VC.Body"
+                android:buttonTint="@color/pace_electric_blue"/>
+
+            <CheckBox
+                android:id="@+id/cbTtsLabelCadence"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="케이던스"
+                android:textAppearance="@style/TextAppearance.VC.Body"
+                android:buttonTint="@color/pace_electric_blue"/>
+        </LinearLayout>
+
+        <!-- ═══ 메트로놈 ═══ -->
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="메트로놈 음량"
-            android:textSize="18sp"
-            android:textColor="#FFFFFF"
-            android:layout_marginBottom="8dp"/>
+            style="@style/SectionLabel"
+            android:text="메트로놈"/>
 
-        <TextView
-            android:id="@+id/tvMetronomeVolume"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="100%"
-            android:textSize="16sp"
-            android:textColor="#44AAFF"
-            android:layout_marginBottom="4dp"/>
-
-        <SeekBar
-            android:id="@+id/seekMetronomeVolume"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="100"
-            android:layout_marginBottom="32dp"/>
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="@dimen/space_l"
+            android:layout_marginBottom="@dimen/space_l">
 
+            <!-- ── 메트로놈 음량 ── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="@dimen/space_xs">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="음량"
+                    android:textAppearance="@style/TextAppearance.VC.Body"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/tvMetronomeVolume"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="100%"
+                    android:textAppearance="@style/TextAppearance.VC.Body"
+                    android:textColor="@color/pace_electric_blue"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/seekMetronomeVolume"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:progress="100"
+                android:layout_marginBottom="@dimen/space_l"/>
+
+            <!-- 구분선 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/stroke_thin"
+                android:background="@color/border_subtle"
+                android:layout_marginBottom="@dimen/space_l"/>
+
+            <!-- ── 메트로놈 사운드 ── -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="사운드"
+                android:textAppearance="@style/TextAppearance.VC.Body"
+                android:textStyle="bold"
+                android:layout_marginBottom="@dimen/space_s"/>
+
+            <RadioGroup
+                android:id="@+id/radioMetroSound"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <RadioButton
+                    android:id="@+id/rbMetroBeep"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="비프"
+                    android:textAppearance="@style/TextAppearance.VC.Body"
+                    android:buttonTint="@color/pace_electric_blue"
+                    android:layout_marginEnd="@dimen/space_l"/>
+                <RadioButton
+                    android:id="@+id/rbMetroWood"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="우드블록"
+                    android:textAppearance="@style/TextAppearance.VC.Body"
+                    android:buttonTint="@color/pace_electric_blue"/>
+            </RadioGroup>
+        </LinearLayout>
+
+        <!-- ═══ 달리기 ═══ -->
         <TextView
-            android:layout_width="wrap_content"
+            style="@style/SectionLabel"
+            android:text="달리기"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="※ TTS 음량은 다음 안내부터 즉시 적용됩니다.\n※ 메트로놈 음량은 메트로놈을 다시 시작해야 적용됩니다."
-            android:textSize="13sp"
-            android:textColor="#AAAAAA"
-            android:layout_marginBottom="24dp"/>
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="@dimen/space_l"
+            android:layout_marginBottom="@dimen/space_l">
+
+            <!-- ── 페이스 평균 시간 ── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="@dimen/space_xs">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="페이스 평균 시간"
+                    android:textAppearance="@style/TextAppearance.VC.Body"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/tvPaceWindow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3초"
+                    android:textAppearance="@style/TextAppearance.VC.Body"
+                    android:textColor="@color/pace_electric_blue"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/seekPaceWindow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="4"
+                android:progress="2"
+                android:layout_marginBottom="@dimen/space_xs"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="1초에 가까울수록 반응이 빨라 인터벌 훈련에 적합하고, 5초에 가까울수록 페이스 튐이 줄어듭니다."
+                android:textAppearance="@style/TextAppearance.VC.Caption"/>
+        </LinearLayout>
+
+        <!-- ═══ Meditation ═══ -->
+        <TextView
+            style="@style/SectionLabel"
+            android:text="Meditation"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="@dimen/space_l"
+            android:layout_marginBottom="@dimen/space_l">
+
+            <CheckBox
+                android:id="@+id/cbFocusAutoMute"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="집중 모드에서 N분 후 사운드 자동 음소거"
+                android:textAppearance="@style/TextAppearance.VC.Body"
+                android:textStyle="bold"
+                android:buttonTint="@color/pace_electric_blue"
+                android:layout_marginBottom="@dimen/space_xs"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="호흡 가이드 + 심박수 음성 모두 끔. 시각/화면 표시는 유지."
+                android:textAppearance="@style/TextAppearance.VC.Caption"
+                android:layout_marginStart="@dimen/space_xl"
+                android:layout_marginBottom="@dimen/space_m"/>
+
+            <LinearLayout
+                android:id="@+id/focusMuteRow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginStart="@dimen/space_xl">
+
+                <Button
+                    android:id="@+id/btnFocusMuteMinus"
+                    style="@style/Widget.VC.Button.Stepper.Compact"
+                    android:text="−"
+                    android:contentDescription="음소거 시간 감소"/>
+
+                <EditText
+                    android:id="@+id/etFocusMuteMin"
+                    style="@style/Widget.VC.EditText.Number"
+                    android:layout_width="64dp"
+                    android:layout_marginStart="@dimen/space_xs"
+                    android:layout_marginEnd="@dimen/space_xs"
+                    android:text="15"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="분"
+                    android:textAppearance="@style/TextAppearance.VC.Body"
+                    android:layout_marginEnd="@dimen/space_s"/>
+
+                <Button
+                    android:id="@+id/btnFocusMutePlus"
+                    style="@style/Widget.VC.Button.Stepper.Compact"
+                    android:text="+"
+                    android:contentDescription="음소거 시간 증가"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ═══ 고급 ═══ -->
+        <TextView
+            style="@style/SectionLabel"
+            android:text="고급"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="@dimen/space_l"
+            android:layout_marginBottom="@dimen/space_l">
+
+            <CheckBox
+                android:id="@+id/cbGolfMode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="골프 메트로놈 모드 활성화"
+                android:textAppearance="@style/TextAppearance.VC.Body"
+                android:textStyle="bold"
+                android:buttonTint="@color/pace_electric_blue"
+                android:layout_marginBottom="@dimen/space_xs"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="체크하면 메인 화면에 골프 탭이 추가됩니다.\n3:1 템포 메트로놈 + 클럽 BPM 프리셋이 필요한 경우만 사용."
+                android:textAppearance="@style/TextAppearance.VC.Caption"
+                android:layout_marginStart="@dimen/space_xl"/>
+        </LinearLayout>
+
+        <!-- ═══ 적용 안내 ═══ -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="※ TTS 음량 / 메트로놈 음량 / 페이스 평균 시간은 즉시 적용됩니다.\n※ 자동 음소거는 집중 모드 진입 시점부터 적용됩니다."
+            android:textAppearance="@style/TextAppearance.VC.Caption"/>
 
     </LinearLayout>
-
 </ScrollView>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    스플래시 로고 — 심박수 하트 + 펄스 모양.
+    SplashScreen API 의 windowSplashScreenAnimatedIcon 으로 사용 (108x108 viewport, 안전영역 안쪽 36% 차지).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 하트 (가운데, 약간 위쪽) -->
+    <path
+        android:fillColor="@color/hr_neon_red"
+        android:pathData="M54,68
+            C54,68 38,58 32,48
+            C28,42 30,32 38,32
+            C44,32 50,36 54,42
+            C58,36 64,32 70,32
+            C78,32 80,42 76,48
+            C70,58 54,68 54,68 Z" />
+
+    <!-- 펄스 라인 (하트 위로 가로지름) -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/hr_neon_red"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M28,52 L40,52 L44,46 L50,58 L56,40 L62,52 L80,52" />
+</vector>

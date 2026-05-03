@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/space_l"
+        android:paddingEnd="@dimen/space_l"
+        android:paddingTop="@dimen/space_s"
+        android:paddingBottom="@dimen/space_s">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="한 사이클의 각 단계 시간을 설정하세요.\n홀드는 0으로 두면 사이클에서 빠집니다."
+            android:textAppearance="@style/TextAppearance.VC.Caption"
+            android:layout_marginBottom="@dimen/space_m"/>
+
+        <!-- 들숨 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/space_s">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="들숨"
+                android:textAppearance="@style/TextAppearance.VC.Body"
+                android:textStyle="bold"/>
+            <Button
+                android:id="@+id/btnInhaleMinus"
+                style="@style/Widget.VC.Button.Stepper.Compact"
+                android:text="−"
+                android:contentDescription="들숨 시간 감소"/>
+            <EditText
+                android:id="@+id/etInhaleSec"
+                style="@style/Widget.VC.EditText.Number"
+                android:layout_width="56dp"
+                android:layout_marginStart="@dimen/space_xs"
+                android:layout_marginEnd="@dimen/space_xs"
+                android:text="4"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="초 "
+                android:textAppearance="@style/TextAppearance.VC.Label"/>
+            <Button
+                android:id="@+id/btnInhalePlus"
+                style="@style/Widget.VC.Button.Stepper.Compact"
+                android:text="+"
+                android:contentDescription="들숨 시간 증가"/>
+        </LinearLayout>
+
+        <!-- 홀드1 (들숨 후) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/space_s">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="홀드 1 (들숨 후)"
+                android:textAppearance="@style/TextAppearance.VC.Body"
+                android:textStyle="bold"/>
+            <Button
+                android:id="@+id/btnHold1Minus"
+                style="@style/Widget.VC.Button.Stepper.Compact"
+                android:text="−"
+                android:contentDescription="홀드1 시간 감소"/>
+            <EditText
+                android:id="@+id/etHold1Sec"
+                style="@style/Widget.VC.EditText.Number"
+                android:layout_width="56dp"
+                android:layout_marginStart="@dimen/space_xs"
+                android:layout_marginEnd="@dimen/space_xs"
+                android:text="4"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="초 "
+                android:textAppearance="@style/TextAppearance.VC.Label"/>
+            <Button
+                android:id="@+id/btnHold1Plus"
+                style="@style/Widget.VC.Button.Stepper.Compact"
+                android:text="+"
+                android:contentDescription="홀드1 시간 증가"/>
+        </LinearLayout>
+
+        <!-- 날숨 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/space_s">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="날숨"
+                android:textAppearance="@style/TextAppearance.VC.Body"
+                android:textStyle="bold"/>
+            <Button
+                android:id="@+id/btnExhaleMinus"
+                style="@style/Widget.VC.Button.Stepper.Compact"
+                android:text="−"
+                android:contentDescription="날숨 시간 감소"/>
+            <EditText
+                android:id="@+id/etExhaleSec"
+                style="@style/Widget.VC.EditText.Number"
+                android:layout_width="56dp"
+                android:layout_marginStart="@dimen/space_xs"
+                android:layout_marginEnd="@dimen/space_xs"
+                android:text="4"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="초 "
+                android:textAppearance="@style/TextAppearance.VC.Label"/>
+            <Button
+                android:id="@+id/btnExhalePlus"
+                style="@style/Widget.VC.Button.Stepper.Compact"
+                android:text="+"
+                android:contentDescription="날숨 시간 증가"/>
+        </LinearLayout>
+
+        <!-- 홀드2 (날숨 후) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/space_m">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="홀드 2 (날숨 후)"
+                android:textAppearance="@style/TextAppearance.VC.Body"
+                android:textStyle="bold"/>
+            <Button
+                android:id="@+id/btnHold2Minus"
+                style="@style/Widget.VC.Button.Stepper.Compact"
+                android:text="−"
+                android:contentDescription="홀드2 시간 감소"/>
+            <EditText
+                android:id="@+id/etHold2Sec"
+                style="@style/Widget.VC.EditText.Number"
+                android:layout_width="56dp"
+                android:layout_marginStart="@dimen/space_xs"
+                android:layout_marginEnd="@dimen/space_xs"
+                android:text="0"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="초 "
+                android:textAppearance="@style/TextAppearance.VC.Label"/>
+            <Button
+                android:id="@+id/btnHold2Plus"
+                style="@style/Widget.VC.Button.Stepper.Compact"
+                android:text="+"
+                android:contentDescription="홀드2 시간 증가"/>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/stroke_thin"
+            android:background="@color/border_strong"
+            android:layout_marginBottom="@dimen/space_m"/>
+
+        <TextView
+            android:id="@+id/tvCycleTotal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="한 사이클: 12초"
+            android:textAppearance="@style/TextAppearance.VC.Label"
+            android:textStyle="bold"
+            android:layout_gravity="end"/>
+
+    </LinearLayout>
+
+</ScrollView>
