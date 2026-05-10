@@ -1,7 +1,13 @@
 package com.jecheon.voicecoach
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
+import android.view.HapticFeedbackConstants
+import android.view.MotionEvent
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -77,4 +83,56 @@ fun AppCompatActivity.showMessage(
         snackbar.setAction(action.first) { action.second() }
     }
     snackbar.show()
+}
+
+/**
+ * 길게 누르면 가속 자동 반복하는 동작.
+ *
+ * - ACTION_DOWN: action() 즉시 1회 + 햅틱
+ * - 400ms 후부터 반복 시작 (250ms 간격)
+ * - 누르고 있는 시간에 따라 점진 가속:
+ *   - 0~800ms: 250ms 간격 (~4 Hz)
+ *   - 800~1500ms: 150ms 간격 (~6.7 Hz)
+ *   - 1500~2200ms: 100ms 간격 (10 Hz)
+ *   - 2200ms+: 50ms 간격 (= **20 Hz, 최대 속도**)
+ * - ACTION_UP / CANCEL: 즉시 중단
+ *
+ * 사용처: stepper +/- 버튼처럼 한 번 클릭으로 1단위, 길게 누르면 빠르게 변경하고 싶을 때.
+ *
+ * setOnClickListener 를 대체함 — 이 함수 적용한 View 에서는 onClick 별도 등록 불필요.
+ */
+@SuppressLint("ClickableViewAccessibility")
+fun View.setOnAutoRepeatAction(action: () -> Unit) {
+    val handler = Handler(Looper.getMainLooper())
+    var pressStart = 0L
+    lateinit var runnable: Runnable
+    runnable = Runnable {
+        action()
+        val elapsed = SystemClock.uptimeMillis() - pressStart
+        val nextDelay = when {
+            elapsed < 800 -> 250L
+            elapsed < 1500 -> 150L
+            elapsed < 2200 -> 100L
+            else -> 50L  // 20 Hz cap
+        }
+        handler.postDelayed(runnable, nextDelay)
+    }
+    setOnTouchListener { v, event ->
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                v.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+                action()
+                pressStart = SystemClock.uptimeMillis()
+                handler.postDelayed(runnable, 400L)
+                v.isPressed = true
+                true
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                handler.removeCallbacks(runnable)
+                v.isPressed = false
+                true
+            }
+            else -> false
+        }
+    }
 }

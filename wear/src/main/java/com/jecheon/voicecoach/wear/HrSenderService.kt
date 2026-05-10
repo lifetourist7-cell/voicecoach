@@ -40,6 +40,20 @@ class HrSenderService : Service() {
         private const val NOTIF_ID = 1
         private const val NOTIF_PERM_ID = 2
         private const val SEND_INTERVAL_MS = 1000L
+
+        /**
+         * 서비스가 실제 측정 중인지 단순 플래그.
+         *
+         * Wear OS UI (WearMainActivity) 가 onStart 마다 이 값 보고 토글/상태 동기화.
+         * 폰에서 /start_hr_sender 로 원격 시작했다 사용자가 워치 앱 켰을 때 — UI 가
+         * 기본 OFF 상태로 보이지 않고 "전송 중" 으로 시작.
+         *
+         * onCreate 에서 권한 통과 후 true, onDestroy 에서 false. @Volatile 로 cross-thread
+         * 가시성 확보 (Activity 는 main thread, service callback 은 health-services thread).
+         */
+        @Volatile
+        var isRunning: Boolean = false
+            private set
     }
 
     /** Activity 가 bind 해 실시간 BPM 표시할 수 있도록 callback. */
@@ -59,7 +73,11 @@ class HrSenderService : Service() {
     fun setListener(l: BpmListener?) { bpmListener = l }
 
     private var lastSentMs: Long = 0L
-    @Volatile private var lastBpm: Int = 0
+    @Volatile var lastBpm: Int = 0
+        private set
+    /** 마지막으로 알려진 health-services 가용성. UI bind 시 즉시 표시용. */
+    @Volatile var lastAvailable: Boolean = false
+        private set
 
     private val measureCallback = object : MeasureCallback {
         override fun onAvailabilityChanged(
@@ -68,6 +86,7 @@ class HrSenderService : Service() {
         ) {
             val available = availability is androidx.health.services.client.data.DataTypeAvailability &&
                 availability == androidx.health.services.client.data.DataTypeAvailability.AVAILABLE
+            lastAvailable = available
             bpmListener?.onAvailabilityChanged(available)
         }
 
@@ -106,6 +125,9 @@ class HrSenderService : Service() {
         val measureClient = HealthServices.getClient(this).measureClient
         try {
             measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, measureCallback)
+            // 측정 callback 정상 등록 후에만 isRunning=true.
+            // (등록 자체가 실패하면 곧바로 stopSelf 라 isRunning 은 false 유지)
+            isRunning = true
         } catch (_: Exception) {
             stopSelf()
         }
@@ -118,6 +140,7 @@ class HrSenderService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        isRunning = false
         try {
             HealthServices.getClient(this).measureClient
                 .unregisterMeasureCallbackAsync(DataType.HEART_RATE_BPM, measureCallback)

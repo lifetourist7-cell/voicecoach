@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    정지 버튼 — 빨강 그라데이션 (traffic-light Stop semantics).
+    이전엔 검정 outline 이라 시각적 약함 — 운동 중 정지는 명확한 액션이어야 함.
+    HR display 빨강과 색 자체는 같지만 컨텍스트로 구분됨 (큰 버튼 = 액션, 큰 숫자 = 측정값).
+-->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
     android:color="@color/ripple_light">
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="@color/background_deep"/>
-            <stroke android:width="@dimen/stroke_medium" android:color="@color/surface_variant"/>
+            <gradient
+                android:startColor="@color/action_stop"
+                android:endColor="@color/action_stop_light"
+                android:angle="45"/>
             <corners android:radius="@dimen/radius_l"/>
         </shape>
     </item>

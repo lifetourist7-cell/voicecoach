@@ -14,6 +14,14 @@
     <color name="hr_neon_red_light">#FF375F</color>  <!-- gradient 끝 -->
     <color name="pace_electric_blue">#007AFF</color>
     <color name="accent_green">#34C759</color>
+    <color name="accent_green_light">#3DD968</color>  <!-- start button gradient 끝 -->
+
+    <!-- ─── Action 색 (traffic-light semantics) ─── -->
+    <!-- 시작 = 초록 (Go), 정지 = 빨강 (Stop). HR 빨강과 의미 분리됨 -->
+    <color name="action_start">#34C759</color>
+    <color name="action_start_light">#3DD968</color>
+    <color name="action_stop">#FF3B30</color>
+    <color name="action_stop_light">#FF453A</color>
 
     <!-- ─── 텍스트 ─── -->
     <color name="text_primary">#FFFFFF</color>

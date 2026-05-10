@@ -24,9 +24,11 @@
 
     <!-- ─── Splash Screen (Android 12+ API, 구버전에서 backport) ─── -->
     <style name="Theme.HRMonitor.SplashScreen" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/background_deep</item>
+        <!-- 런처 아이콘 그라데이션의 deep end (HR 빨강) 와 일치 — 진입 시 색 점프 최소화.
+             SplashScreen API 는 solid color 만 받으므로 그라데이션은 못 씀 → 가장 강렬한 색 선택. -->
+        <item name="windowSplashScreenBackground">@color/hr_neon_red</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
-        <item name="windowSplashScreenIconBackgroundColor">@color/background_deep</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/hr_neon_red</item>
         <item name="postSplashScreenTheme">@style/Theme.HRMonitor</item>
     </style>
 
@@ -106,6 +108,23 @@
         <item name="android:textAllCaps">true</item>
         <item name="android:layout_marginStart">@dimen/space_xs</item>
         <item name="android:layout_marginBottom">@dimen/space_s</item>
+    </style>
+
+    <!-- 기록 화면 필터 chip — 토글 가능한 알약 형태 라디오. -->
+    <style name="HistoryFilterChip">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:button">@null</item>
+        <item name="android:background">@drawable/bg_filter_chip</item>
+        <item name="android:textColor">@color/selector_mode_text</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">@font/pretendard</item>
+        <item name="android:paddingHorizontal">14dp</item>
+        <item name="android:paddingVertical">8dp</item>
+        <item name="android:layout_marginEnd">8dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:gravity">center</item>
     </style>
 
     <!-- 상단 모드 선택 세그먼티드 탭의 각 RadioButton 스타일 -->

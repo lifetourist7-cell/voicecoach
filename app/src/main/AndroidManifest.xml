@@ -57,6 +57,17 @@
             android:exported="false"
             android:theme="@style/Theme.HRMonitor" />
 
+        <!-- 기록 화면 -->
+        <activity
+            android:name=".records.ui.HistoryActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".records.ui.HistoryDetailActivity"
+            android:exported="false"
+            android:parentActivityName=".records.ui.HistoryActivity" />
+
         <service
             android:name=".HRForegroundService"
             android:foregroundServiceType="connectedDevice|location"

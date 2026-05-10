@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    세션 상세 화면.
+
+    구성:
+      - 헤더 (뒤로 + 모드 + 날짜)
+      - 큰 요약 카드 (지속시간, 평균/최대/최저 BPM)
+      - 전체 심박 그래프 (HrGraphView)
+      - 모드별 상세 섹션 (running/meditation/golf 각각 다른 정보)
+      - 타임라인 (이벤트 리스트)
+-->
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/detailScroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_deep">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/space_m"
+        android:paddingTop="@dimen/space_s"
+        android:paddingBottom="@dimen/space_xl">
+
+        <!-- 헤더 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="@dimen/space_s">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:src="@android:drawable/ic_menu_revert"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:tint="@color/text_primary"
+                android:contentDescription="뒤로"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="@dimen/space_s">
+
+                <TextView
+                    android:id="@+id/tvDetailMode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.VC.Headline"
+                    tools:text="달리기"/>
+
+                <TextView
+                    android:id="@+id/tvDetailDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.VC.Body"
+                    tools:text="2026/5/3 (월) 19:32"/>
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btnDelete"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:src="@android:drawable/ic_menu_delete"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                app:tint="@color/text_secondary"
+                android:contentDescription="삭제"/>
+        </LinearLayout>
+
+        <!-- 요약 카드: duration + HR -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="@dimen/space_m"
+            android:layout_marginTop="@dimen/space_l">
+
+            <TextView
+                android:id="@+id/tvDuration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.VC.Metric.Large"
+                tools:text="42:18"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="총 시간"
+                android:textAppearance="@style/TextAppearance.VC.Caption"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/surface_variant"
+                android:layout_marginVertical="@dimen/space_m"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="3">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/tvAvgHr"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.VC.Title"
+                        tools:text="142"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="평균"
+                        android:textAppearance="@style/TextAppearance.VC.Caption"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/tvMaxHr"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.VC.Title"
+                        tools:text="178"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="최대"
+                        android:textAppearance="@style/TextAppearance.VC.Caption"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/tvMinHr"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="@style/TextAppearance.VC.Title"
+                        tools:text="98"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="최저"
+                        android:textAppearance="@style/TextAppearance.VC.Caption"/>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- HR 그래프 -->
+        <TextView
+            style="@style/SectionLabel"
+            android:text="심박 그래프"
+            android:layout_marginTop="@dimen/space_l"/>
+
+        <com.jecheon.voicecoach.HrGraphView
+            android:id="@+id/detailHrGraph"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:background="@drawable/bg_card"
+            android:padding="@dimen/space_s"/>
+
+        <TextView
+            android:id="@+id/tvGraphHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="핀치 줌 / 더블탭 = 60초"
+            android:textAppearance="@style/TextAppearance.VC.Caption"
+            android:layout_marginTop="@dimen/space_xs"
+            android:layout_gravity="end"/>
+
+        <!-- 모드별 상세 섹션 — visibility 토글로 한 화면에 통합 -->
+
+        <!-- Running 섹션 -->
+        <LinearLayout
+            android:id="@+id/runningSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                style="@style/SectionLabel"
+                android:text="달리기 메트릭"
+                android:layout_marginTop="@dimen/space_l"/>
+
+            <LinearLayout
+                android:id="@+id/runningStatsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="@dimen/space_m"/>
+        </LinearLayout>
+
+        <!-- Meditation 섹션 -->
+        <LinearLayout
+            android:id="@+id/meditationSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                style="@style/SectionLabel"
+                android:text="Meditation 메트릭"
+                android:layout_marginTop="@dimen/space_l"/>
+
+            <LinearLayout
+                android:id="@+id/meditationStatsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="@dimen/space_m"/>
+        </LinearLayout>
+
+        <!-- Golf 섹션 -->
+        <LinearLayout
+            android:id="@+id/golfSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                style="@style/SectionLabel"
+                android:text="골프 메트릭"
+                android:layout_marginTop="@dimen/space_l"/>
+
+            <LinearLayout
+                android:id="@+id/golfStatsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="@dimen/space_m"/>
+        </LinearLayout>
+
+        <!-- 이벤트 타임라인 -->
+        <TextView
+            style="@style/SectionLabel"
+            android:text="이벤트 타임라인"
+            android:layout_marginTop="@dimen/space_l"/>
+
+        <LinearLayout
+            android:id="@+id/timelineContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card"
+            android:padding="@dimen/space_m"/>
+
+        <TextView
+            android:id="@+id/tvSessionMeta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.VC.Caption"
+            android:layout_marginTop="@dimen/space_l"
+            tools:text="v1.5 (6) · 워치 · ble"/>
+    </LinearLayout>
+</ScrollView>

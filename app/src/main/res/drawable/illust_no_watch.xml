@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Empty state 일러스트 — 워치가 연결 안 된 상태.
-    원형 워치 + 점선 + 흐릿한 하트. 미니멀.
+    원형 워치 + 점선 + 흐릿한 심박 파형. 미니멀.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="120dp"
@@ -35,17 +35,15 @@
         android:pathData="M82,72 L92,82 M88,68 L98,78 M76,82 L86,92"
         android:pathPattern="2,4" />
 
-    <!-- 흐릿한 하트 (가운데, 워치 화면 위치) -->
+    <!-- 흐릿한 심박 파형 (가운데, 워치 화면 위치) -->
     <path
-        android:fillColor="@color/hr_neon_red"
-        android:fillAlpha="0.5"
-        android:pathData="M60,50
-            C60,50 50,44 46,38
-            C43,34 45,28 50,28
-            C54,28 58,30 60,34
-            C62,30 66,28 70,28
-            C75,28 77,34 74,38
-            C70,44 60,50 60,50 Z" />
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/hr_neon_red"
+        android:strokeAlpha="0.55"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M45,42 L53,42 L56,36 L60,50 L65,29 L69,42 L76,42" />
 
     <!-- 물음표 (연결 모름) -->
     <path

@@ -39,6 +39,22 @@ class HelpActivity : AppCompatActivity() {
         // ─── 추가 기능 ───
         bindCard(R.id.cardCoach, TITLE_COACH, MSG_COACH)
         bindCard(R.id.cardBreath, TITLE_BREATH, MSG_BREATH)
+        bindCard(R.id.cardFocusSound, TITLE_FOCUS_SOUND, MSG_FOCUS_SOUND)
+
+        // 노이즈 다이얼로그 "자세히 보기" 에서 진입 시 자동으로 다이얼로그 띄우기
+        if (intent?.getStringExtra(EXTRA_FOCUS_SECTION) == SECTION_FOCUS_SOUND) {
+            findViewById<View>(R.id.cardFocusSound).post {
+                showFocusSoundDialog()
+            }
+        }
+    }
+
+    private fun showFocusSoundDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(TITLE_FOCUS_SOUND)
+            .setMessage(MSG_FOCUS_SOUND)
+            .setPositiveButton("확인", null)
+            .show()
     }
 
     private fun bindCard(id: Int, title: String, message: String) {
@@ -68,12 +84,14 @@ class HelpActivity : AppCompatActivity() {
         const val MSG_WEAR =
             "갤럭시워치 4 이상 / 픽셀워치 / OnePlus Watch 등 Wear OS 3+ 기반 워치입니다.\n\n" +
             "사용 순서\n" +
-            "1) 폰에 본 앱 설치 — 워치에도 컴패니언 앱이 자동 설치됨 (Play Store 통해 설치 시)\n" +
-            "2) 워치에서 VoiceCoach 앱을 한 번 실행 → 심박수 / 알림 권한 허용\n" +
-            "3) 폰 앱 시작 → 워치에 자동으로 측정 시작 알림\n" +
-            "4) 폰 앱에 '심박수 수신 중 (워치)' 표시\n\n" +
+            "1) 폰에 본 앱 설치 (= 지금 보고 있는 이 앱)\n" +
+            "2) 워치의 Play 스토어에서 'VoiceCoach' 검색 → 설치\n" +
+            "   ※ 폰 앱 설치 시 워치에도 자동 설치되는 경우가 있지만, 항상 보장되지는 않아요.\n" +
+            "3) 워치에서 VoiceCoach 앱을 한 번 실행 → 심박수 (BODY_SENSORS) 권한 허용\n" +
+            "4) 폰 앱 시작 → 자동으로 워치에 측정 시작 신호 전송\n" +
+            "5) 폰 앱에 '심박수 수신 중 (워치)' 표시\n\n" +
             "팁\n• 갤럭시워치 — Galaxy Wearable 앱으로 폰과 페어링 필요\n" +
-            "• 컴패니언 앱이 자동 설치되지 않으면 워치 Play Store 에서 'VoiceCoach' 검색\n" +
+            "• 워치 앱이 보이지 않으면 폰의 Play 스토어 → 본인 계정 → 기기 관리 → 워치 선택 → 'VoiceCoach 설치'\n" +
             "• 갤럭시워치 3 / Gear S3 (Tizen) 는 지원하지 않습니다."
 
         const val TITLE_NO_WATCH = "워치 없이 사용"
@@ -128,5 +146,34 @@ class HelpActivity : AppCompatActivity() {
             "• 4-2-6 호흡 — 부교감 활성. 스트레스 해소\n" +
             "• 사용자 정의 — 들이마심 / 멈춤1 / 내쉼 / 멈춤2 직접 설정 (각 1~30초)\n\n" +
             "메트로놈 토글을 켜면 호흡 박자에 맞춰 부드러운 클릭음."
+
+        // ─── 집중 사운드의 근거 (실험적 보조 기능) ───
+        const val TITLE_FOCUS_SOUND = "집중 사운드의 근거"
+        const val MSG_FOCUS_SOUND =
+            "이 앱의 집중 사운드는 백색/브라운 노이즈, 40Hz 바이노럴 비트, 짧은 페이드 전환을 " +
+            "조합해 사용자의 집중 환경을 보조하도록 설계되었습니다.\n\n" +
+            "■ 노이즈\n" +
+            "백색소음은 일부 ADHD/주의 어려움 연구에서 작업기억이나 주의 과제에 도움을 보인 경우가 " +
+            "있습니다. 다만 모든 연구가 같은 결론을 보인 것은 아니며, 효과는 개인마다 다를 수 있습니다.\n\n" +
+            "■ 40Hz 바이노럴 비트\n" +
+            "일부 연구에서 40Hz 바이노럴 비트가 주의 과제나 인지 수행에 긍정적인 신호를 보고했습니다. " +
+            "이 기능은 치료 목적이 아니라 작업 전 집중 루틴을 돕는 실험적 보조 기능입니다. " +
+            "이어폰/헤드폰에서만 의미가 있으며, 폰 스피커로는 두 톤이 공기에서 섞여 binaural 효과가 " +
+            "거의 발생하지 않습니다.\n\n" +
+            "■ 안전 안내\n" +
+            "• 이어폰 또는 헤드폰 사용을 권장합니다.\n" +
+            "• 운전 중이나 주변 소리를 들어야 하는 상황에서는 사용하지 마세요.\n" +
+            "• 두통, 어지러움, 불편감이 있으면 즉시 중지하세요.\n" +
+            "• 간질/발작 병력 등 신경학적 질환이 있다면 전문가와 상담 후 사용하세요.\n" +
+            "• 이 기능은 의학적 치료를 대체하지 않습니다.\n\n" +
+            "■ 참고 자료 (요약)\n" +
+            "• Ross & Lopez (2020), Scientific Reports: 40-Hz binaural beats and attentional blink\n" +
+            "• 40Hz 바이노럴 비트 / 주의·EEG 관련 연구\n" +
+            "• ADHD 와 백색소음 연구 — 긍정적 결과, 무효, 개인차가 섞여 보고됨\n\n" +
+            "효과는 개인차가 크며, 본 기능은 ADHD 치료를 대체하지 않습니다."
+
+        // 노이즈 다이얼로그에서 자세히 보기 진입 시 사용
+        const val EXTRA_FOCUS_SECTION = "extra_focus_section"
+        const val SECTION_FOCUS_SOUND = "focus_sound"
     }
 }

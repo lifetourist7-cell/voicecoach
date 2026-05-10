@@ -6,9 +6,11 @@ import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
+import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.hardware.camera2.CameraAccessException
@@ -80,6 +82,40 @@ class MainActivity : AppCompatActivity() {
     private var dimActive: Boolean = false
     private val dimDelayMs = 10_000L
 
+    /**
+     * Wear OS 워치 앱 미설치 / 페어링 없음 안내를 한 세션당 한 번만 띄우기 위한 플래그.
+     * startHRService() 마다 false 로 리셋 → 사용자가 다시 시작 누르면 새 세션의 첫 결과로 다시 안내.
+     */
+    private var wearStatusDialogShown: Boolean = false
+
+    /**
+     * HRForegroundService 가 보낸 ACTION_WEAR_STATUS broadcast 수신 — UI 다이얼로그 분기.
+     * Service 는 상태만 알리고 다이얼로그/Snackbar 같은 UI 는 Activity 가 책임 (Codex 리뷰).
+     */
+    private val wearStatusReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action != HRForegroundService.ACTION_WEAR_STATUS) return
+            val status = intent.getStringExtra(HRForegroundService.EXTRA_WEAR_STATUS) ?: return
+            when (status) {
+                HRForegroundService.WEAR_STATUS_OK -> {
+                    // capable 노드 발견 → 정상 흐름. tvStatus 는 실제 HR 수신 시점에 갱신됨.
+                }
+                HRForegroundService.WEAR_STATUS_MISSING -> {
+                    if (!wearStatusDialogShown && !isFinishing) {
+                        wearStatusDialogShown = true
+                        showWearAppMissingDialog()
+                    }
+                }
+                HRForegroundService.WEAR_STATUS_NO_PAIRED -> {
+                    if (!wearStatusDialogShown && !isFinishing) {
+                        wearStatusDialogShown = true
+                        showWearNoPairedDialog()
+                    }
+                }
+            }
+        }
+    }
+
     // 몰입 모드 활성 중에는 "뒤로" 를 앱 종료가 아닌 모드 해제로 사용
     private val focusBackCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
@@ -133,7 +169,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var rbPresetCoherent: RadioButton
     private lateinit var rbPresetLongExhale: RadioButton
     private lateinit var rbPresetCustom: RadioButton
-    private lateinit var cbBreathMetro: CheckBox
+    // 호흡 안내음 모드 — 3-state 선택 (단계만 / 초 카운트 / 무음).
+    // 이전엔 cbBreathMetro 단일 체크박스 (true=count, false=phase) 였음.
+    // 무음 모드 추가로 RadioGroup 으로 전환.
+    private lateinit var breathAudioModeGroup: RadioGroup
+    private lateinit var rbBreathModePhase: RadioButton
+    private lateinit var rbBreathModeCount: RadioButton
+    private lateinit var rbBreathModeSilent: RadioButton
     // 호흡 Phase 표시 + 양방향 게이지 (흰선/파란선)
     private lateinit var breathPhaseContainer: LinearLayout
     private lateinit var tvBreathPhase: TextView
@@ -400,6 +442,13 @@ class MainActivity : AppCompatActivity() {
         btnSettings.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
+        val btnHistory = findViewById<ImageButton>(R.id.btnHistory)
+        btnHistory.setOnClickListener {
+            startActivity(Intent(this, com.jecheon.voicecoach.records.ui.HistoryActivity::class.java))
+        }
+        // 좌측 swipe (왼쪽으로 미는 손가락) → 기록 진입.  Samsung One UI edge gesture 와
+        // 충돌 방지 위해 일정 거리 (>= 120dp) + 빠른 속도 요건 둠.
+        installHistorySwipeGesture()
         spinnerLanguage = findViewById(R.id.spinnerLanguage)
         btnMetronome = findViewById(R.id.btnMetronome)
         etMetronomeBpm = findViewById(R.id.etMetronomeBpm)
@@ -498,7 +547,10 @@ class MainActivity : AppCompatActivity() {
         rbPresetLongExhale = findViewById(R.id.rbPresetLongExhale)
         rbPresetCustom = findViewById(R.id.rbPresetCustom)
         findViewById<View>(R.id.btnCustomEdit).setOnClickListener { showCustomBreathDialog() }
-        cbBreathMetro = findViewById(R.id.cbBreathMetro)
+        breathAudioModeGroup = findViewById(R.id.breathAudioModeGroup)
+        rbBreathModePhase = findViewById(R.id.rbBreathModePhase)
+        rbBreathModeCount = findViewById(R.id.rbBreathModeCount)
+        rbBreathModeSilent = findViewById(R.id.rbBreathModeSilent)
         breathPhaseContainer = findViewById(R.id.breathPhaseContainer)
         tvBreathPhase = findViewById(R.id.tvBreathPhase)
         tvBreathPhaseRemaining = findViewById(R.id.tvBreathPhaseRemaining)
@@ -830,7 +882,19 @@ class MainActivity : AppCompatActivity() {
         // 초기 선택 상태 복원
         val savedPreset = prefs.getString("meditation_preset", "box") ?: "box"
         presetButtons.forEach { (id, rb) -> rb.isChecked = (id == savedPreset) }
-        cbBreathMetro.isChecked = prefs.getBoolean("breath_metro_enabled", false)
+
+        // 호흡 안내음 모드 복원 — breath_audio_mode 가 없으면 legacy breath_metro_enabled 로 추정.
+        // (Service 의 currentBreathAudioMode 와 동일한 migration 로직 — 어느 쪽이 먼저 실행돼도 OK.)
+        val savedAudioMode = prefs.getString("breath_audio_mode", null) ?: run {
+            val legacy = if (prefs.getBoolean("breath_metro_enabled", false)) "count" else "phase"
+            prefs.edit().putString("breath_audio_mode", legacy).apply()
+            legacy
+        }
+        when (savedAudioMode) {
+            "count" -> rbBreathModeCount.isChecked = true
+            "silent" -> rbBreathModeSilent.isChecked = true
+            else -> rbBreathModePhase.isChecked = true  // 기본값 phase
+        }
 
         // 라디오 (수동 상호 배제)
         presetButtons.forEach { (id, rb) ->
@@ -850,11 +914,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // 초 카운트 공용 체크박스 — 4개 프리셋 모두에 적용. 체크만 하면 서비스의
-        // 매초 tick 로직이 prefs 를 즉시 읽어 반영 (별도 재시작 불필요)
-        cbBreathMetro.setOnCheckedChangeListener { v, checked ->
-            v.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
-            prefs.edit().putBoolean("breath_metro_enabled", checked).apply()
+        // 호흡 안내음 모드 — 4개 프리셋 모두에 적용.  서비스의 매초 Runnable 이 currentBreathAudioMode()
+        // 로 prefs 를 매 tick 읽어 반영해서 진행 중 변경도 즉시 적용됨.
+        breathAudioModeGroup.setOnCheckedChangeListener { _, checkedId ->
+            val mode = when (checkedId) {
+                R.id.rbBreathModeCount -> "count"
+                R.id.rbBreathModeSilent -> "silent"
+                else -> "phase"
+            }
+            prefs.edit().putString("breath_audio_mode", mode).apply()
+            findViewById<View>(checkedId)?.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
         }
 
         // ─── 백색 소음 ───
@@ -883,7 +952,13 @@ class MainActivity : AppCompatActivity() {
                 suppressListeners = false
                 return@setOnCheckedChangeListener
             }
-            if (checked) startNoiseFromPrefs() else hrService?.stopNoise()
+            if (checked) {
+                startNoiseFromPrefs()
+            } else {
+                // 노이즈 OFF 시 40Hz 비트도 함께 중단 (lifecycle 종속)
+                hrService?.stopBinauralBeat()
+                hrService?.stopNoise()
+            }
         }
 
         // 호흡 시작 토글
@@ -949,6 +1024,24 @@ class MainActivity : AppCompatActivity() {
         }
         // Settings 에서 골프 모드 토글 변경하고 돌아왔을 때 즉시 반영
         applyGolfModeVisibility()
+
+        // Wear OS 상태 broadcast 수신.  Service 가 같은 패키지로 setPackage() 해서 보내므로
+        // RECEIVER_NOT_EXPORTED 로 안전하게 등록 (Android 13+ 요건).
+        ContextCompat.registerReceiver(
+            this,
+            wearStatusReceiver,
+            IntentFilter(HRForegroundService.ACTION_WEAR_STATUS),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+    }
+
+    override fun onPause() {
+        super.onPause()
+        try {
+            unregisterReceiver(wearStatusReceiver)
+        } catch (_: IllegalArgumentException) {
+            // 등록 안 된 상태에서 onPause — 무시
+        }
     }
 
     /**
@@ -960,6 +1053,47 @@ class MainActivity : AppCompatActivity() {
      *
      * onCreate 와 onResume 에서 호출.
      */
+    /**
+     * 메인 화면에 좌측 swipe 제스처 등록 — 화면 끝에서 왼쪽으로 빠르게 밀면 [HistoryActivity].
+     *
+     * Samsung One UI edge swipe (back gesture) 충돌 회피:
+     *   - 120dp 이상의 가로 이동 + 일정 속도 요건 (단순 탭/스크롤과 구분)
+     *   - 세로 이동량이 가로보다 작아야 함 (수직 스크롤과 구분)
+     *
+     * RootView 에 GestureDetector 부착해서 ScrollView 등 자식 뷰의 일반 입력은 통과시키되,
+     * fling 인식되면 startActivity 호출.
+     */
+    private fun installHistorySwipeGesture() {
+        val density = resources.displayMetrics.density
+        val minSwipeDistPx = 120f * density
+        val minVelocityX = 600f
+        val gestureDetector = android.view.GestureDetector(
+            this,
+            object : android.view.GestureDetector.SimpleOnGestureListener() {
+                override fun onFling(
+                    e1: android.view.MotionEvent?, e2: android.view.MotionEvent,
+                    velocityX: Float, velocityY: Float
+                ): Boolean {
+                    if (e1 == null) return false
+                    val dx = e2.x - e1.x
+                    val dy = e2.y - e1.y
+                    if (dx > minSwipeDistPx && Math.abs(dx) > Math.abs(dy) * 1.5f && velocityX > minVelocityX) {
+                        startActivity(Intent(this@MainActivity,
+                            com.jecheon.voicecoach.records.ui.HistoryActivity::class.java))
+                        return true
+                    }
+                    return false
+                }
+            }
+        )
+        // 메인 컨텐츠 영역 (root) 에 fling 만 가로채는 listener.  click 등은 자식 뷰가 그대로 받음.
+        val root = findViewById<View>(android.R.id.content)
+        root.setOnTouchListener { _, ev ->
+            gestureDetector.onTouchEvent(ev)
+            false  // 자식 뷰에 그대로 전달
+        }
+    }
+
     private fun applyGolfModeVisibility() {
         val prefs = getSharedPreferences("voicecoach_settings", Context.MODE_PRIVATE)
         val golfEnabled = prefs.getBoolean("golf_mode_enabled", false)
@@ -1140,6 +1274,8 @@ class MainActivity : AppCompatActivity() {
             isBound = false
             hrService = null
         }
+        // 새 세션 시작 — Wear 안내 다이얼로그 1회 게이트 리셋.
+        wearStatusDialogShown = false
         val intent = Intent(this, HRForegroundService::class.java)
         stopService(intent)
         ContextCompat.startForegroundService(this, intent)
@@ -1148,10 +1284,49 @@ class MainActivity : AppCompatActivity() {
         setRunningState(true)
     }
 
+    /**
+     * Wear OS 워치는 페어링되어 있지만 VoiceCoach 컴패니언 앱이 미설치/미실행인 경우.
+     * Service 의 broadcast 수신 시 한 세션당 한 번만 표시.
+     */
+    private fun showWearAppMissingDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("워치 앱이 필요합니다")
+            .setMessage(
+                "Wear OS 워치에 VoiceCoach 컴패니언 앱이 설치되어 있지 않거나 한 번도 실행되지 않은 것 같아요.\n\n" +
+                "워치의 Play 스토어에서 'VoiceCoach' 검색 → 설치 → 워치에서 한 번 실행하고 BODY_SENSORS (심박수) 권한을 허용해주세요.\n\n" +
+                "그 사이에도 폰 앱은 계속 동작합니다.  음성 안내, 메트로놈, 노이즈 마스킹 같은 기능은 워치 없이도 OK — 심박수만 받지 못해요."
+            )
+            .setPositiveButton("확인", null)
+            .setNeutralButton("워치 도움말") { _, _ ->
+                startActivity(Intent(this, HelpActivity::class.java))
+            }
+            .show()
+    }
+
+    /**
+     * 페어링된 Wear OS 워치 자체가 없는 경우 (Galaxy Wearable 등 컴패니언 앱에서 페어링 필요).
+     */
+    private fun showWearNoPairedDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("페어링된 워치가 없습니다")
+            .setMessage(
+                "Wear OS 워치가 폰과 페어링되어 있지 않거나 연결이 끊긴 상태입니다.\n\n" +
+                "Galaxy Wearable / Pixel Watch 등 워치 컴패니언 앱에서 페어링을 다시 확인해주세요.\n\n" +
+                "BLE 송출 워치 (가민 / 폴라 등) 를 사용 중이라면 설정에서 워치 종류를 변경해주세요."
+            )
+            .setPositiveButton("확인", null)
+            .setNeutralButton("워치 도움말") { _, _ ->
+                startActivity(Intent(this, HelpActivity::class.java))
+            }
+            .show()
+    }
+
     private fun stopHRService() {
         // Meditation 세션이었다면 요약 토스트 (서비스 unbind 전에 데이터 추출)
         val medSummary = hrService?.getMeditationSummary()
         hrService?.stopMetronome()
+        // 노이즈와 40Hz 포커스 비트는 lifecycle 묶임 — 함께 정지
+        hrService?.stopBinauralBeat()
         hrService?.stopNoise()
         suppressListeners = true
         btnNoiseStart.isChecked = false
@@ -1179,99 +1354,122 @@ class MainActivity : AppCompatActivity() {
     /** 현재 prefs 에 따라 노이즈 시작. 슬라이더 값/볼륨도 prefs 에서. */
     private fun startNoiseFromPrefs() {
         val prefs = getSharedPreferences("voicecoach_settings", Context.MODE_PRIVATE)
-        val type = prefs.getString("noise_preset", "white") ?: "white"
-        val cutoff = prefs.getInt("noise_custom_cutoff_hz", 5000).toFloat()
+        // ── 단일 진실 소스: 메인 화면 RadioGroup 가 결정한 noise_preset 만 신뢰 ──
+        // legacy "calm_clear" 값이 prefs 에 남아있으면 "custom" 으로 마이그레이션.
+        val rawType = prefs.getString("noise_preset", "white") ?: "white"
+        val type = when (rawType) {
+            "white", "brown", "custom" -> rawType
+            "calm_clear" -> {
+                // 한 번 마이그레이션 후 계속 custom 으로 동작
+                prefs.edit().putString("noise_preset", "custom").apply()
+                "custom"
+            }
+            else -> {
+                prefs.edit().putString("noise_preset", "white").apply()
+                "white"
+            }
+        }
         val volume = prefs.getInt("noise_volume_pct", 50).coerceIn(0, 100) / 100f
+        val cutoff = currentCustomCutoffHz(prefs).toFloat()
         hrService?.startNoise(type, cutoff, volume)
+
+        // 40Hz 포커스 비트는 노이즈 토글에 lifecycle 종속.
+        // 노이즈 시작 시 enabled 면 같이 시작.
+        if (prefs.getBoolean("binaural_enabled", false)) {
+            val strength = prefs.getString("binaural_strength", "weak") ?: "weak"
+            val mode = prefs.getString("binaural_mode", "continuous") ?: "continuous"
+            hrService?.startBinauralBeat(strength, mode)
+        }
     }
 
+    /**
+     * 커스텀 노이즈 cutoff (Hz) 를 prefs 에서 가져옴.
+     *
+     * prefs 호환성:
+     * - 새 키 `noise_custom_tone_pct` (0~100) 우선 사용
+     * - 없으면 legacy `noise_custom_cutoff_hz` (10~10000) 폴백
+     * - 0~100% slider → 10~10000Hz 매핑은 NoisePlayer 의 brownEffectiveCutoff 와 별개로
+     *   선형 매핑 (UI 슬라이더 의미와 직접 연결)
+     */
+    private fun currentCustomCutoffHz(prefs: android.content.SharedPreferences): Int {
+        val tonePct = prefs.getInt("noise_custom_tone_pct", -1)
+        return if (tonePct >= 0) {
+            tonePctToCutoffHz(tonePct.coerceIn(0, 100))
+        } else {
+            prefs.getInt("noise_custom_cutoff_hz", 5000).coerceIn(10, 10000)
+        }
+    }
+
+    /** 0~100% 슬라이더 → 10~10000Hz 선형 매핑. */
+    private fun tonePctToCutoffHz(pct: Int): Int =
+        (10 + (pct.coerceIn(0, 100) / 100f) * (10_000 - 10)).toInt()
+
     /** 노이즈 커스텀 슬라이더 다이얼로그 (컷오프 + 음량). 재생 중 실시간 반영. */
+    /**
+     * 커스텀 노이즈 설정 다이얼로그.
+     *
+     * 책임:
+     * - 커스텀 톤 (차분 ↔ 또렷) 슬라이더 — `noise_custom_tone_pct` 만 변경. `noise_preset` 은 안 건드림.
+     * - 음량
+     * - 40Hz 포커스 비트 토글 + 강도 / 모드
+     * - 근거 / 안전 안내
+     *
+     * 노이즈 종류 (white/brown/custom) 선택 책임은 메인 화면 [noisePresetGroup] 에만 있음.
+     * 다이얼로그 안에서는 다시 선택하지 않는다.
+     */
     private fun showNoiseDialog() {
         val prefs = getSharedPreferences("voicecoach_settings", Context.MODE_PRIVATE)
         val view = layoutInflater.inflate(R.layout.dialog_noise, null)
 
-        val seekCutoff = view.findViewById<SeekBar>(R.id.seekNoiseCutoff)
-        val etCutoff = view.findViewById<EditText>(R.id.etNoiseCutoff)
-        val btnCutoffMinus = view.findViewById<Button>(R.id.btnNoiseCutoffMinus)
-        val btnCutoffPlus = view.findViewById<Button>(R.id.btnNoiseCutoffPlus)
+        // ── Tone slider (차분 ↔ 또렷) ──
+        val seekTone = view.findViewById<SeekBar>(R.id.seekCalmness)
+        // ── Volume ──
         val seekVol = view.findViewById<SeekBar>(R.id.seekNoiseVolume)
         val tvVol = view.findViewById<TextView>(R.id.tvNoiseVolume)
+        // ── Binaural ──
+        val cbBinaural = view.findViewById<CheckBox>(R.id.cbBinauralEnabled)
+        val binauralOptions = view.findViewById<LinearLayout>(R.id.binauralOptions)
+        val rgStrength = view.findViewById<RadioGroup>(R.id.radioBinauralStrength)
+        val rgMode = view.findViewById<RadioGroup>(R.id.radioBinauralMode)
+        // ── Evidence ──
+        val btnEvidence = view.findViewById<Button>(R.id.btnFocusEvidence)
 
-        // 슬라이더 max=9990, progress 0~9990 → cutoff = progress + 10 (10~10000Hz)
-        val savedCutoff = prefs.getInt("noise_custom_cutoff_hz", 5000).coerceIn(10, 10000)
-        seekCutoff.progress = savedCutoff - 10
-        etCutoff.setText(savedCutoff.toString())
-        etCutoff.setSelection(etCutoff.text.length)
-        val savedVol = prefs.getInt("noise_volume_pct", 50).coerceIn(0, 100)
-        seekVol.progress = savedVol
-        tvVol.text = "$savedVol%"
-
-        // 컷오프 입력 — 커스텀 모드에서만 의미. 다른 프리셋 선택 시 흐릿 + disable
-        val customSelected = rbNoiseCustom.isChecked
-        val cutoffAlpha = if (customSelected) 1.0f else 0.4f
-        seekCutoff.isEnabled = customSelected
-        seekCutoff.alpha = cutoffAlpha
-        etCutoff.isEnabled = customSelected
-        etCutoff.alpha = cutoffAlpha
-        btnCutoffMinus.isEnabled = customSelected
-        btnCutoffMinus.alpha = cutoffAlpha
-        btnCutoffPlus.isEnabled = customSelected
-        btnCutoffPlus.alpha = cutoffAlpha
-
-        // ── 단일 진실 소스: commitCutoff(hz) 가 슬라이더 + EditText + prefs + live 노이즈 모두 동기화 ──
-        // 슬라이더 listener (fromUser=false 일 때) 는 EditText 갱신 안 함 — 무한 루프 방지.
-        fun commitCutoff(rawHz: Int) {
-            val hz = rawHz.coerceIn(10, 10000)
-            etCutoff.setText(hz.toString())
-            etCutoff.setSelection(etCutoff.text.length)
-            // 슬라이더 이동 — listener 가 prefs 저장 + live 반영 처리
-            seekCutoff.progress = hz - 10
+        // ── 커스텀 톤 슬라이더 ──
+        // legacy: noise_custom_cutoff_hz (10~10000 Hz). 신규: noise_custom_tone_pct (0~100).
+        // 한쪽만 있어도 양쪽 동기화하여 저장.
+        val savedTonePct = run {
+            val explicit = prefs.getInt("noise_custom_tone_pct", -1)
+            if (explicit >= 0) explicit.coerceIn(0, 100)
+            else {
+                val legacyHz = prefs.getInt("noise_custom_cutoff_hz", 5000).coerceIn(10, 10000)
+                cutoffHzToTonePct(legacyHz)
+            }
         }
-
-        fun commitFromText() {
-            val hz = etCutoff.text.toString().toIntOrNull()
-                ?: (seekCutoff.progress + 10)  // 무효 입력이면 현재 슬라이더 값으로 복원
-            commitCutoff(hz)
-        }
-
-        seekCutoff.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        seekTone.progress = savedTonePct
+        seekTone.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
-                val hz = progress + 10
-                if (fromUser) {
-                    // 사용자가 슬라이더 드래그 — EditText 도 동기화
-                    etCutoff.setText(hz.toString())
-                    etCutoff.setSelection(etCutoff.text.length)
-                }
-                prefs.edit().putInt("noise_custom_cutoff_hz", hz).apply()
-                // 재생 중 + 커스텀 선택 시 즉시 반영
-                if (btnNoiseStart.isChecked && rbNoiseCustom.isChecked && isBound) {
-                    hrService?.updateNoiseCutoff(hz.toFloat())
+                if (!fromUser) return
+                val cutoff = tonePctToCutoffHz(progress)
+                // tone_pct 와 legacy cutoff_hz 양쪽 다 저장 (호환성).
+                // noise_preset 은 절대 변경 안 함 — 메인 화면 RadioGroup 의 결정만 신뢰.
+                prefs.edit()
+                    .putInt("noise_custom_tone_pct", progress)
+                    .putInt("noise_custom_cutoff_hz", cutoff)
+                    .apply()
+                // 메인이 "custom" 선택했고 노이즈 재생 중이면 즉시 반영. 그 외엔 저장만.
+                val currentPreset = prefs.getString("noise_preset", "white")
+                if (btnNoiseStart.isChecked && currentPreset == "custom" && isBound) {
+                    hrService?.updateNoiseCutoff(cutoff.toFloat())
                 }
             }
             override fun onStartTrackingTouch(sb: SeekBar?) {}
             override fun onStopTrackingTouch(sb: SeekBar?) {}
         })
 
-        // EditText — Done / 포커스 잃을 때 commit
-        etCutoff.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
-                commitFromText()
-                true
-            } else false
-        }
-        etCutoff.setOnFocusChangeListener { _, focused ->
-            if (!focused) commitFromText()
-        }
-
-        // ± 버튼 — 1Hz 단위 미세 조정
-        btnCutoffMinus.setOnClickListener {
-            val cur = etCutoff.text.toString().toIntOrNull() ?: (seekCutoff.progress + 10)
-            commitCutoff(cur - 1)
-        }
-        btnCutoffPlus.setOnClickListener {
-            val cur = etCutoff.text.toString().toIntOrNull() ?: (seekCutoff.progress + 10)
-            commitCutoff(cur + 1)
-        }
+        // ── 음량 (노이즈 종류 무관 — 재생 중이면 항상 즉시 반영) ──
+        val savedVol = prefs.getInt("noise_volume_pct", 50).coerceIn(0, 100)
+        seekVol.progress = savedVol
+        tvVol.text = "$savedVol%"
         seekVol.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
                 tvVol.text = "$progress%"
@@ -1284,12 +1482,72 @@ class MainActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(sb: SeekBar?) {}
         })
 
+        // ── 40Hz 포커스 비트 ──
+        val savedBinauralEnabled = prefs.getBoolean("binaural_enabled", false)
+        val savedBinauralStrength = prefs.getString("binaural_strength", "weak") ?: "weak"
+        val savedBinauralMode = prefs.getString("binaural_mode", "continuous") ?: "continuous"
+
+        cbBinaural.isChecked = savedBinauralEnabled
+        binauralOptions.visibility = if (savedBinauralEnabled) View.VISIBLE else View.GONE
+        when (savedBinauralStrength) {
+            "medium" -> rgStrength.check(R.id.rbBinauralMedium)
+            "strong" -> rgStrength.check(R.id.rbBinauralStrong)
+            else -> rgStrength.check(R.id.rbBinauralWeak)
+        }
+        rgMode.check(if (savedBinauralMode == "5min") R.id.rbBinauralFiveMin else R.id.rbBinauralContinuous)
+
+        cbBinaural.setOnCheckedChangeListener { _, checked ->
+            prefs.edit().putBoolean("binaural_enabled", checked).apply()
+            binauralOptions.visibility = if (checked) View.VISIBLE else View.GONE
+            // 노이즈 토글이 OFF 면 설정만 저장. ON 이고 bound 면 즉시 적용.
+            if (!btnNoiseStart.isChecked || !isBound) return@setOnCheckedChangeListener
+            if (checked) {
+                val strength = prefs.getString("binaural_strength", "weak") ?: "weak"
+                val mode = prefs.getString("binaural_mode", "continuous") ?: "continuous"
+                hrService?.startBinauralBeat(strength, mode)
+            } else {
+                hrService?.stopBinauralBeat()
+            }
+        }
+        rgStrength.setOnCheckedChangeListener { _, checkedId ->
+            val strength = when (checkedId) {
+                R.id.rbBinauralMedium -> "medium"
+                R.id.rbBinauralStrong -> "strong"
+                else -> "weak"
+            }
+            prefs.edit().putString("binaural_strength", strength).apply()
+            // 비트 + 노이즈 모두 켜진 상태에서만 live update
+            if (cbBinaural.isChecked && btnNoiseStart.isChecked && isBound) {
+                hrService?.updateBinauralStrength(strength)
+            }
+        }
+        rgMode.setOnCheckedChangeListener { _, checkedId ->
+            val mode = if (checkedId == R.id.rbBinauralFiveMin) "5min" else "continuous"
+            prefs.edit().putString("binaural_mode", mode).apply()
+            // 모드 변경 시 재시작 (5분 타이머 리셋). 노이즈 OFF 면 저장만.
+            if (cbBinaural.isChecked && btnNoiseStart.isChecked && isBound) {
+                val strength = prefs.getString("binaural_strength", "weak") ?: "weak"
+                hrService?.startBinauralBeat(strength, mode)
+            }
+        }
+
+        // ── 근거 자세히 보기 → HelpActivity ──
+        btnEvidence.setOnClickListener {
+            val intent = Intent(this, HelpActivity::class.java)
+            intent.putExtra(HelpActivity.EXTRA_FOCUS_SECTION, HelpActivity.SECTION_FOCUS_SOUND)
+            startActivity(intent)
+        }
+
         AlertDialog.Builder(this)
-            .setTitle("노이즈 설정")
+            .setTitle("커스텀 노이즈 설정")
             .setView(view)
             .setPositiveButton("닫기", null)
             .show()
     }
+
+    /** 10~10000Hz cutoff → 0~100% slider 역매핑. 선형 매핑과 일관. */
+    private fun cutoffHzToTonePct(hz: Int): Int =
+        ((hz.coerceIn(10, 10_000) - 10) * 100f / (10_000 - 10)).toInt().coerceIn(0, 100)
 
     /** 커스텀 호흡 사이클 편집 다이얼로그 — 4단계 stepper + 실시간 합계 */
     private fun showCustomBreathDialog() {
@@ -1574,6 +1832,26 @@ class MainActivity : AppCompatActivity() {
         view.alpha = 1.0f
     }
 
+    /**
+     * Phase 전환 라벨 시각 강조 — 200ms scale-up bounce.
+     *
+     * 무음 모드 (breath_audio_mode = "silent") 사용자도 단계 전환 시점을 놓치지 않도록
+     * 라벨 텍스트가 살짝 커졌다 줄어들며 시각적 박동. 톤 / TTS 안 들리는 환경에서 핵심.
+     * 모든 모드에서 동일하게 적용 — 음성/시각 결합이 더 자연스러움.
+     */
+    private fun flashBreathPhaseLabel(view: View) {
+        view.animate().cancel()
+        view.scaleX = 1.18f
+        view.scaleY = 1.18f
+        view.alpha = 1.0f
+        view.animate()
+            .scaleX(1.0f)
+            .scaleY(1.0f)
+            .setDuration(200L)
+            .setInterpolator(LinearInterpolator())
+            .start()
+    }
+
     private fun flashCoachAlert(upper: Boolean) {
         // 상한 초과면 빨강, 하한 이탈이면 파랑으로 500ms 짧은 pulse
         val transparent = android.graphics.Color.TRANSPARENT
@@ -1601,6 +1879,11 @@ class MainActivity : AppCompatActivity() {
         // 남은 시간 표시 동기화
         phaseStartMs = SystemClock.elapsedRealtime()
         phaseDurationSec = durationSec
+
+        // Phase 전환 시각 강조 — 라벨 텍스트에 200ms scale-up bounce.
+        // 모든 모드 (특히 무음 모드) 에서 단계 전환을 놓치지 않도록 짧은 강조.
+        flashBreathPhaseLabel(tvBreathPhase)
+        flashBreathPhaseLabel(tvFocusBreathPhase)
 
         // 기존 애니메이션 정리 (메인 + 몰입 양쪽)
         breathWhiteAnim?.cancel(); breathWhiteAnim = null
@@ -1709,6 +1992,8 @@ class MainActivity : AppCompatActivity() {
         // 서비스가 "집중 모드 N분 후 음소거" 옵션 발동 여부를 판단할 수 있게 prefs 에 기록
         getSharedPreferences("voicecoach_settings", Context.MODE_PRIVATE)
             .edit().putBoolean("focus_mode_active", true).apply()
+        // 기록 — 이번 세션에 몰입 모드 사용했음을 표시
+        hrService?.recordFocusModeUsed()
         updateKeepScreenOn()
     }
 

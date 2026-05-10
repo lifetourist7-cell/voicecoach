@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 환영 일러스트 — 큰 하트 + 펄스 라인 -->
+<!-- 환영 일러스트 — 심박 파형 + 음성 웨이브 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="160dp"
     android:height="160dp"
@@ -22,23 +22,27 @@
         android:strokeAlpha="0.5"
         android:pathData="M80,80 m-48,0 a48,48 0 1,0 96,0 a48,48 0 1,0 -96,0" />
 
-    <!-- 큰 하트 (가운데) -->
     <path
-        android:fillColor="@color/hr_neon_red"
-        android:pathData="M80,108
-            C80,108 50,90 38,72
-            C30,60 36,42 50,42
-            C62,42 74,48 80,58
-            C86,48 98,42 110,42
-            C124,42 130,60 122,72
-            C110,90 80,108 80,108 Z" />
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/pace_electric_blue"
+        android:strokeAlpha="0.55"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M54,70 L54,90 M66,58 L66,102 M94,58 L94,102 M106,70 L106,90" />
 
-    <!-- 펄스 라인 (하트 가로지름) -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/hr_neon_red"
+        android:strokeWidth="7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M40,82 L58,82 L66,70 L75,104 L84,50 L94,82 L120,82" />
+
     <path
         android:fillColor="@android:color/transparent"
         android:strokeColor="@color/text_primary"
+        android:strokeAlpha="0.8"
         android:strokeWidth="3"
         android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M48,76 L62,76 L66,68 L72,84 L80,60 L88,84 L94,68 L98,76 L112,76" />
+        android:pathData="M48,108 C66,120 94,120 112,108" />
 </vector>

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:scrollbars="none">
+
+<LinearLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -8,85 +13,67 @@
     android:paddingTop="@dimen/space_s"
     android:paddingBottom="@dimen/space_s">
 
+    <!--
+        다이얼로그 책임 = "커스텀 노이즈 설정"
+        - 노이즈 종류 (white/brown/custom) 선택은 메인 화면 RadioGroup 의 책임.
+          여기서는 다시 선택하지 않는다.
+        - 이 다이얼로그가 다루는 것:
+          1) 커스텀 프리셋의 톤 (차분 ↔ 또렷)
+          2) 음량
+          3) 40Hz 포커스 비트
+          4) 근거 / 안전 안내
+    -->
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="저역통과 컷오프 주파수를 조정합니다.\n낮을수록 저음이 강조되고(브라운에 가깝고), 높을수록 전대역(화이트에 가까움)이 됩니다."
+        android:text="커스텀 노이즈의 톤과 음량을 조정합니다.\n노이즈 종류 선택 (화이트 / 브라운 / 커스텀) 은 메인 화면에서 합니다."
         android:textAppearance="@style/TextAppearance.VC.Caption"
         android:layout_marginBottom="@dimen/space_m"/>
 
+    <!-- ═══ 1. 커스텀 톤: 차분하게 ↔ 또렷하게 ═══ -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="컷오프 주파수"
+        android:text="커스텀 톤"
         android:textAppearance="@style/TextAppearance.VC.Label"
         android:textStyle="bold"/>
 
-    <!-- 직접 입력 가능한 EditText + ± 버튼 + Hz 라벨. 슬라이더와 양방향 동기화. -->
-    <LinearLayout
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
+        android:text="메인에서 '커스텀' 선택 시 적용되는 톤. 다른 종류 재생 중에는 저장만 됩니다."
+        android:textAppearance="@style/TextAppearance.VC.Caption"
         android:layout_marginTop="@dimen/space_xs"
-        android:layout_marginBottom="@dimen/space_s">
-
-        <Button
-            android:id="@+id/btnNoiseCutoffMinus"
-            style="@style/Widget.VC.Button.Stepper.Compact"
-            android:text="−"
-            android:contentDescription="주파수 1Hz 감소"/>
-
-        <EditText
-            android:id="@+id/etNoiseCutoff"
-            style="@style/Widget.VC.EditText.Number"
-            android:layout_width="96dp"
-            android:textColor="@color/pace_electric_blue"
-            android:layout_marginStart="@dimen/space_s"
-            android:layout_marginEnd="@dimen/space_s"
-            android:text="5000"/>
-
-        <Button
-            android:id="@+id/btnNoiseCutoffPlus"
-            style="@style/Widget.VC.Button.Stepper.Compact"
-            android:text="+"
-            android:contentDescription="주파수 1Hz 증가"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hz"
-            android:textAppearance="@style/TextAppearance.VC.Body"
-            android:textColor="@color/pace_electric_blue"
-            android:layout_marginStart="@dimen/space_s"/>
-    </LinearLayout>
+        android:layout_marginBottom="@dimen/space_s"/>
 
     <SeekBar
-        android:id="@+id/seekNoiseCutoff"
+        android:id="@+id/seekCalmness"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:max="9990"
-        android:progress="4990"
+        android:max="100"
+        android:progress="40"
         android:layout_marginBottom="@dimen/space_xs"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginBottom="@dimen/space_m">
+        android:layout_marginBottom="@dimen/space_l">
         <TextView
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="저음 (브라운)"
+            android:text="차분하게"
             android:textAppearance="@style/TextAppearance.VC.Caption"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="전대역 (화이트)"
+            android:text="또렷하게"
             android:textAppearance="@style/TextAppearance.VC.Caption"/>
     </LinearLayout>
 
+    <!-- ═══ 2. 음량 ═══ -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -109,13 +96,144 @@
         android:layout_height="wrap_content"
         android:max="100"
         android:progress="50"
-        android:layout_marginBottom="@dimen/space_s"/>
+        android:layout_marginBottom="@dimen/space_l"/>
+
+    <!-- ═══ 3. 40Hz 포커스 비트 ═══ -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/stroke_thin"
+        android:background="@color/border_subtle"
+        android:layout_marginBottom="@dimen/space_m"/>
+
+    <CheckBox
+        android:id="@+id/cbBinauralEnabled"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="40Hz 포커스 비트"
+        android:textAppearance="@style/TextAppearance.VC.Body"
+        android:textStyle="bold"
+        android:buttonTint="@color/pace_electric_blue"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="※ 슬라이더는 노이즈 재생 중 실시간 반영됩니다."
+        android:text="작업 전 집중 루틴 보조용 실험적 기능. 이어폰/헤드폰 권장.\n노이즈 토글이 ON 인 동안에만 재생됩니다."
+        android:textAppearance="@style/TextAppearance.VC.Caption"
+        android:layout_marginStart="@dimen/space_xl"
+        android:layout_marginBottom="@dimen/space_s"/>
+
+    <LinearLayout
+        android:id="@+id/binauralOptions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginStart="@dimen/space_xl"
+        android:layout_marginBottom="@dimen/space_s"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="강도"
+            android:textAppearance="@style/TextAppearance.VC.Caption"
+            android:textStyle="bold"
+            android:layout_marginTop="@dimen/space_s"
+            android:layout_marginBottom="@dimen/space_xs"/>
+
+        <RadioGroup
+            android:id="@+id/radioBinauralStrength"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <RadioButton
+                android:id="@+id/rbBinauralWeak"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="약함"
+                android:textAppearance="@style/TextAppearance.VC.Body"
+                android:buttonTint="@color/pace_electric_blue"
+                android:layout_marginEnd="@dimen/space_m"/>
+            <RadioButton
+                android:id="@+id/rbBinauralMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="보통"
+                android:textAppearance="@style/TextAppearance.VC.Body"
+                android:buttonTint="@color/pace_electric_blue"
+                android:layout_marginEnd="@dimen/space_m"/>
+            <RadioButton
+                android:id="@+id/rbBinauralStrong"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="강함"
+                android:textAppearance="@style/TextAppearance.VC.Body"
+                android:buttonTint="@color/pace_electric_blue"/>
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="모드"
+            android:textAppearance="@style/TextAppearance.VC.Caption"
+            android:textStyle="bold"
+            android:layout_marginTop="@dimen/space_s"
+            android:layout_marginBottom="@dimen/space_xs"/>
+
+        <RadioGroup
+            android:id="@+id/radioBinauralMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <RadioButton
+                android:id="@+id/rbBinauralFiveMin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="5분 준비"
+                android:textAppearance="@style/TextAppearance.VC.Body"
+                android:buttonTint="@color/pace_electric_blue"
+                android:layout_marginEnd="@dimen/space_m"/>
+            <RadioButton
+                android:id="@+id/rbBinauralContinuous"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="계속 재생"
+                android:textAppearance="@style/TextAppearance.VC.Body"
+                android:buttonTint="@color/pace_electric_blue"/>
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="• 운전 중·주변 소리를 들어야 할 때 사용 금지\n• 두통/어지러움 시 즉시 중지\n• 간질·발작 병력 있다면 전문가와 상담\n• 의학적 치료를 대체하지 않습니다"
+            android:textAppearance="@style/TextAppearance.VC.Caption"
+            android:layout_marginTop="@dimen/space_s"/>
+    </LinearLayout>
+
+    <!-- ═══ 4. 근거 + 자세히 보기 ═══ -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/stroke_thin"
+        android:background="@color/border_subtle"
+        android:layout_marginBottom="@dimen/space_m"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="일부 연구에서 백색소음과 40Hz 바이노럴 비트가 주의/작업기억 과제에 도움을 줄 수 있다는 결과가 보고되었습니다. 다만 효과는 개인차가 크며, ADHD 치료를 대체하지 않습니다."
+        android:textAppearance="@style/TextAppearance.VC.Caption"/>
+
+    <Button
+        android:id="@+id/btnFocusEvidence"
+        style="@style/Widget.VC.Button.Text"
+        android:text="자세히 보기"
+        android:layout_marginTop="@dimen/space_xs"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="※ 슬라이더/체크박스는 재생 중 1초 fade 로 부드럽게 적용됩니다."
         android:textAppearance="@style/TextAppearance.VC.Caption"
         android:layout_marginTop="@dimen/space_s"/>
 
 </LinearLayout>
+</ScrollView>

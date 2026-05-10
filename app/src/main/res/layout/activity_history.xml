@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    기록 화면 — 세션 카드 목록.
+
+    레이아웃 구성:
+      - 상단 헤더: 뒤로가기 + 제목
+      - 필터 chips (전체 / 달리기 / Meditation / 골프)
+      - RecyclerView: 세션 카드 (반응형 — 화면 폭 좁을 때 wrap)
+      - 빈 상태 안내 (기록 없음)
+
+    edge-to-edge 호환 — fitsSystemWindows + insets handler 가 padding 자동 적용.
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/historyRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_deep">
+
+    <!-- ─── Header ─── -->
+    <LinearLayout
+        android:id="@+id/headerRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/space_m"
+        android:paddingVertical="@dimen/space_s"
+        android:layout_marginTop="@dimen/space_s"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@android:drawable/ic_menu_revert"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="@color/text_primary"
+            android:contentDescription="뒤로"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="기록"
+            android:textAppearance="@style/TextAppearance.VC.Headline"
+            android:layout_marginStart="@dimen/space_s"/>
+
+        <TextView
+            android:id="@+id/tvCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.VC.Caption"
+            tools:text="총 12건"/>
+    </LinearLayout>
+
+    <!-- ─── Filter Chips (수동 RadioGroup 형태) ─── -->
+    <HorizontalScrollView
+        android:id="@+id/filterScroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:paddingHorizontal="@dimen/space_m"
+        android:layout_marginTop="@dimen/space_xs"
+        app:layout_constraintTop_toBottomOf="@id/headerRow">
+
+        <RadioGroup
+            android:id="@+id/filterGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/filterAll"
+                style="@style/HistoryFilterChip"
+                android:text="전체"
+                android:checked="true"/>
+
+            <RadioButton
+                android:id="@+id/filterRunning"
+                style="@style/HistoryFilterChip"
+                android:text="달리기"/>
+
+            <RadioButton
+                android:id="@+id/filterMeditation"
+                style="@style/HistoryFilterChip"
+                android:text="Meditation"/>
+
+            <RadioButton
+                android:id="@+id/filterGolf"
+                style="@style/HistoryFilterChip"
+                android:text="골프"/>
+        </RadioGroup>
+    </HorizontalScrollView>
+
+    <!-- ─── RecyclerView ─── -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/sessionList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingHorizontal="@dimen/space_m"
+        android:paddingTop="@dimen/space_s"
+        android:paddingBottom="@dimen/space_l"
+        app:layout_constraintTop_toBottomOf="@id/filterScroll"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <!-- ─── Empty State ─── -->
+    <LinearLayout
+        android:id="@+id/emptyView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="@dimen/space_xl"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/sessionList"
+        app:layout_constraintBottom_toBottomOf="@id/sessionList"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="아직 기록이 없습니다"
+            android:textAppearance="@style/TextAppearance.VC.Title"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="달리기 / Meditation / 골프 세션을 시작하면 자동으로 저장됩니다"
+            android:textAppearance="@style/TextAppearance.VC.Caption"
+            android:layout_marginTop="@dimen/space_s"
+            android:gravity="center"/>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

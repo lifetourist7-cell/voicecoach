@@ -1,5 +1,16 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
+}
+
+// Phone 모듈과 동일한 keystore.properties 사용 — 같은 applicationId 라 키도 같아야 함.
+// Play Console 은 같은 listing 내 두 form factor 의 서명 키가 일치해야 받아줌.
+val keystorePropsFile = rootProject.file("keystore.properties")
+val keystoreProps = Properties().apply {
+    if (keystorePropsFile.exists()) {
+        keystorePropsFile.inputStream().use { load(it) }
+    }
 }
 
 android {
@@ -15,8 +26,23 @@ android {
         applicationId = "com.jecheon.voicecoach"
         minSdk = 30          // Wear OS 3 (Galaxy Watch 4+, Pixel Watch 1+)
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        // Form factor 별 versionCode 분리 — Play Console 은 같은 applicationId 의 모든
+        // form factor (mobile / wear / tv 등) versionCode 가 unique 해야 함.
+        // 스킴: wear = 1_000_000 + phone.versionCode  → phone 99,999 까지 충돌 불가능.
+        // 사용자 표기용 versionName 은 phone 과 동일.
+        versionCode = 1_000_006
+        versionName = "1.5"
+    }
+
+    signingConfigs {
+        if (keystorePropsFile.exists()) {
+            create("release") {
+                storeFile = file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
@@ -26,6 +52,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (keystorePropsFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
     compileOptions {

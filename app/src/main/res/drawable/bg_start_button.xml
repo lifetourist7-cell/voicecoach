@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    시작 버튼 — 초록 그라데이션 (traffic-light Go semantics).
+    HR 빨강과 의미 분리: 빨강 = 측정값/경고, 초록 = "지금 시작" 액션.
+-->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
     android:color="@color/ripple_light">
     <item>
         <shape android:shape="rectangle">
             <gradient
-                android:startColor="@color/hr_neon_red"
-                android:endColor="@color/hr_neon_red_light"
+                android:startColor="@color/action_start"
+                android:endColor="@color/action_start_light"
                 android:angle="45"/>
             <corners android:radius="@dimen/radius_l"/>
         </shape>

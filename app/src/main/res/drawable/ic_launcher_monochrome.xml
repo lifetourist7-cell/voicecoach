@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    스플래시 로고 — 런처 아이콘과 동일한 단일 흰색 EKG 펄스.
-    배경 (HR red) 위에 흰 stroke 로 high contrast.
-    런처 → 스플래시 → 메인 진입 시 시각 일관성 유지.
+    Monochrome variant — Material You 테마 아이콘 (Android 13+).
+    foreground 와 동일한 EKG path. 시스템이 적절한 단색 (사용자 wallpaper 추출색) 으로 tint.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"

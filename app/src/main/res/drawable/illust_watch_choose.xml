@@ -35,16 +35,14 @@
         android:strokeColor="@color/text_secondary"
         android:strokeWidth="2"
         android:pathData="M93,38 L127,38 L127,82 L93,82 Z" />
-    <!-- 화면 안 하트 -->
+    <!-- 화면 안 심박 파형 -->
     <path
-        android:fillColor="@color/hr_neon_red"
-        android:pathData="M110,62
-            C110,62 102,57 99,52
-            C97,49 99,45 102,45
-            C105,45 108,47 110,50
-            C112,47 115,45 118,45
-            C121,45 123,49 121,52
-            C118,57 110,62 110,62 Z" />
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="@color/hr_neon_red"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M99,61 L105,61 L108,55 L112,68 L116,49 L120,61" />
     <path
         android:fillColor="@color/text_secondary"
         android:pathData="M105,88 L125,88 L123,100 L107,100 Z" />

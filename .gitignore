@@ -13,3 +13,13 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Release signing — creds 는 절대 커밋 X. 템플릿 (.template) 만 커밋, 실제 파일 무시.
+keystore.properties
+
+# 빌드 산출물 — git 에 들어가면 repo 사이즈 비대해짐, 매번 git 이 diff 추적
+# (실수로 tracked 된 app/release/app-release.aab 같은 케이스 방지)
+app/release/
+wear/release/
+app/build/
+wear/build/

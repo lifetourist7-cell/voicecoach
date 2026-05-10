@@ -51,11 +51,21 @@
                 android:text="Meditation"/>
         </RadioGroup>
 
+        <!-- 기록 — 시계 아이콘 (history). swipe gesture 와 중복되지만
+             gesture 충돌 / 학습 곡선 방지를 위해 명시 버튼도 함께 노출. -->
+        <ImageButton
+            android:id="@+id/btnHistory"
+            style="@style/Widget.VC.Button.Icon"
+            android:src="@android:drawable/ic_menu_recent_history"
+            app:tint="@color/text_secondary"
+            android:layout_marginStart="@dimen/space_xs"
+            android:contentDescription="기록"/>
+
         <ImageButton
             android:id="@+id/btnHelp"
             style="@style/Widget.VC.Button.Icon"
             android:src="@drawable/ic_help"
-            android:layout_marginStart="@dimen/space_s"
+            android:layout_marginStart="@dimen/space_xs"
             android:contentDescription="도움말"/>
 
         <ImageButton
@@ -238,7 +248,7 @@
                         android:textColor="@color/text_secondary"/>
                 </LinearLayout>
 
-                <Button
+                <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnRetry"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
@@ -563,7 +573,7 @@
                     android:layout_gravity="center_horizontal"
                     android:contentDescription="세션 경과 시간"/>
 
-                <Button
+                <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnMedRetry"
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
@@ -658,13 +668,14 @@
                         android:orientation="horizontal"
                         android:gravity="center_vertical">
 
-                        <Button
+                        <androidx.appcompat.widget.AppCompatButton
                             android:id="@+id/btnIntervalMinus"
                             android:layout_width="36dp"
                             android:layout_height="36dp"
                             android:text="−"
                             android:textColor="@color/white"
                             android:background="@drawable/bg_stepper_btn"
+                            android:backgroundTint="@null"
                             android:minWidth="0dp"
                             android:minHeight="0dp"
                             android:padding="0dp"
@@ -683,13 +694,14 @@
                             android:layout_marginStart="8dp"
                             android:layout_marginEnd="8dp"/>
 
-                        <Button
+                        <androidx.appcompat.widget.AppCompatButton
                             android:id="@+id/btnIntervalPlus"
                             android:layout_width="36dp"
                             android:layout_height="36dp"
                             android:text="+"
                             android:textColor="@color/white"
                             android:background="@drawable/bg_stepper_btn"
+                            android:backgroundTint="@null"
                             android:minWidth="0dp"
                             android:minHeight="0dp"
                             android:padding="0dp"
@@ -809,13 +821,14 @@
                             android:orientation="horizontal"
                             android:gravity="center_vertical">
 
-                            <Button
+                            <androidx.appcompat.widget.AppCompatButton
                                 android:id="@+id/btnBpmMinus"
                                 android:layout_width="36dp"
                                 android:layout_height="36dp"
                                 android:text="−"
                                 android:textColor="@color/white"
                                 android:background="@drawable/bg_stepper_btn"
+                            android:backgroundTint="@null"
                                 android:minWidth="0dp"
                                 android:minHeight="0dp"
                                 android:padding="0dp"
@@ -834,13 +847,14 @@
                                 android:layout_marginStart="8dp"
                                 android:layout_marginEnd="8dp"/>
 
-                            <Button
+                            <androidx.appcompat.widget.AppCompatButton
                                 android:id="@+id/btnBpmPlus"
                                 android:layout_width="36dp"
                                 android:layout_height="36dp"
                                 android:text="+"
                                 android:textColor="@color/white"
                                 android:background="@drawable/bg_stepper_btn"
+                            android:backgroundTint="@null"
                                 android:minWidth="0dp"
                                 android:minHeight="0dp"
                                 android:padding="0dp"
@@ -883,7 +897,7 @@
                         android:orientation="horizontal"
                         android:layout_marginBottom="20dp">
 
-                        <Button
+                        <androidx.appcompat.widget.AppCompatButton
                             android:id="@+id/btnClubDriver"
                             android:layout_width="0dp"
                             android:layout_weight="1"
@@ -892,10 +906,11 @@
                             android:textSize="12sp"
                             android:textColor="@color/white"
                             android:background="@drawable/bg_stepper_btn"
+                            android:backgroundTint="@null"
                             android:lineSpacingExtra="1dp"
                             android:padding="0dp"/>
 
-                        <Button
+                        <androidx.appcompat.widget.AppCompatButton
                             android:id="@+id/btnClubIron"
                             android:layout_width="0dp"
                             android:layout_weight="1"
@@ -904,11 +919,12 @@
                             android:textSize="12sp"
                             android:textColor="@color/white"
                             android:background="@drawable/bg_stepper_btn"
+                            android:backgroundTint="@null"
                             android:lineSpacingExtra="1dp"
                             android:layout_marginStart="8dp"
                             android:padding="0dp"/>
 
-                        <Button
+                        <androidx.appcompat.widget.AppCompatButton
                             android:id="@+id/btnClubWedge"
                             android:layout_width="0dp"
                             android:layout_weight="1"
@@ -917,6 +933,7 @@
                             android:textSize="12sp"
                             android:textColor="@color/white"
                             android:background="@drawable/bg_stepper_btn"
+                            android:backgroundTint="@null"
                             android:lineSpacingExtra="1dp"
                             android:layout_marginStart="8dp"
                             android:padding="0dp"/>
@@ -1082,18 +1099,61 @@
                         </LinearLayout>
                     </LinearLayout>
 
-                    <!-- 초 카운트 공용 체크박스 — 4개 프리셋 모두에 적용 -->
-                    <CheckBox
-                        android:id="@+id/cbBreathMetro"
+                    <!-- 호흡 안내음 모드 — 4개 프리셋 모두에 적용 -->
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="초 카운트 (매초 같은 톤으로 박자)"
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp"
-                        android:buttonTint="@color/accent_green"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginBottom="20dp"
-                        android:contentDescription="호흡 매초 박자 카운트"/>
+                        android:text="안내음"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.05"
+                        android:layout_marginTop="14dp"
+                        android:layout_marginBottom="6dp"/>
+
+                    <RadioGroup
+                        android:id="@+id/breathAudioModeGroup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="20dp">
+
+                        <RadioButton
+                            android:id="@+id/rbBreathModePhase"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="단계만"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
+                            android:buttonTint="@color/accent_green"
+                            android:paddingVertical="6dp"
+                            android:contentDescription="호흡 단계 시작 시에만 톤 재생"/>
+
+                        <RadioButton
+                            android:id="@+id/rbBreathModeCount"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="초 카운트"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
+                            android:buttonTint="@color/accent_green"
+                            android:paddingVertical="6dp"
+                            android:contentDescription="매초 박자 카운트"/>
+
+                        <RadioButton
+                            android:id="@+id/rbBreathModeSilent"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="무음"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
+                            android:buttonTint="@color/accent_green"
+                            android:paddingVertical="6dp"
+                            android:contentDescription="호흡 안내음 무음 — 노이즈 마스킹은 정상 재생"/>
+                    </RadioGroup>
 
                     <ToggleButton
                         android:id="@+id/btnBreathStart"
@@ -1187,24 +1247,30 @@
 
             </LinearLayout>
 
-            <!-- ─── START / STOP ─── -->
-            <Button
-                android:id="@+id/btnStart"
-                android:layout_width="match_parent"
-                android:layout_height="72dp"
-                android:text="달리기 시작"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@color/white"
-                android:letterSpacing="0.1"
-                android:background="@drawable/bg_start_button"
-                android:foreground="?attr/selectableItemBackground"
-                android:elevation="8dp"
-                android:stateListAnimator="@null"/>
-
         </LinearLayout>
 
     </ScrollView>
+
+    <!-- ─── START / STOP — 화면 하단 sticky ─── -->
+    <!-- ScrollView 밖으로 분리 → 스크롤 위치 무관 항상 화면에 보임.
+         AppCompatButton 명시 — 일반 <Button> 은 Material 3 가 MaterialButton 으로 inflate 하면서
+         colorPrimary 를 backgroundTint 로 강제 적용해 우리 drawable 색을 덮어씀. -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnStart"
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:layout_marginStart="@dimen/space_l"
+        android:layout_marginEnd="@dimen/space_l"
+        android:layout_marginBottom="@dimen/space_m"
+        android:text="달리기 시작"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:letterSpacing="0.1"
+        android:background="@drawable/bg_start_button"
+        android:foreground="?attr/selectableItemBackground"
+        android:elevation="8dp"
+        android:stateListAnimator="@null"/>
 
 </LinearLayout>
 
@@ -1478,7 +1544,7 @@
                 android:orientation="horizontal"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="6dp">
-                <Button
+                <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnAutoStopMinus"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
@@ -1491,7 +1557,7 @@
                 <View
                     android:layout_width="20dp"
                     android:layout_height="1dp"/>
-                <Button
+                <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnAutoStopPlus"
                     android:layout_width="44dp"
                     android:layout_height="44dp"

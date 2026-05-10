@@ -35,7 +35,9 @@ import android.speech.tts.TextToSpeech
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Tasks
+import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.Wearable
+import com.jecheon.voicecoach.records.SessionLogger
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
@@ -51,9 +53,36 @@ class HRForegroundService : Service() {
         const val ACTION_STOP = "com.jecheon.voicecoach.ACTION_STOP"
         const val ACTION_EXTERNAL_HR = "com.jecheon.voicecoach.ACTION_EXTERNAL_HR"
         const val EXTRA_BPM = "bpm"
+
+        /**
+         * Wear OS 컴패니언 앱 도달 가능 여부 변화 broadcast.
+         * Service 는 직접 다이얼로그를 띄우지 않고 이 broadcast 만 보냄 — 실제 UI (다이얼로그/CTA)
+         * 는 MainActivity 가 receiver 등록해 처리. android:exported=false 컴포넌트 간 통신이라
+         * setPackage(packageName) 로 외부 노출 차단.
+         */
+        const val ACTION_WEAR_STATUS = "com.jecheon.voicecoach.ACTION_WEAR_STATUS"
+        const val EXTRA_WEAR_STATUS = "wear_status"
+        /** capability 노드 발견 → 메시지 송신 성공 */
+        const val WEAR_STATUS_OK = "ok"
+        /** 페어링된 워치는 있는데 우리 앱이 capability 광고 안 함 = 미설치/미실행 */
+        const val WEAR_STATUS_MISSING = "missing"
+        /** 페어링된 워치 자체가 없음 (Galaxy Wearable 페어링 필요) */
+        const val WEAR_STATUS_NO_PAIRED = "no_paired"
+
+        /** Wear OS 컴패니언이 자기 capability 로 광고하는 식별자 — wear/res/values/wear.xml 와 일치. */
+        private const val CAPABILITY_HR_SENDER = "voicecoach_hr_sender"
+
         /** Wear 메시지가 마지막으로 들어온 후 이 시간 내엔 BLE notification 무시. */
         private const val WEAR_PRIORITY_WINDOW_MS = 5000L
     }
+
+    /**
+     * Onboarding 에서 저장한 device_type. "ble" / "wear" / "none".
+     * Service 의 BLE scan / Wear 메시지 / 상태 안내 분기에 사용.
+     */
+    private fun currentDeviceType(): String =
+        getSharedPreferences("voicecoach_settings", MODE_PRIVATE)
+            .getString("device_type", "ble") ?: "ble"
 
     private val binder = LocalBinder()
     private var tts: TextToSpeech? = null
@@ -90,8 +119,47 @@ class HRForegroundService : Service() {
     /** 마지막 Wear 메시지 수신 시각 — BLE 우선/우회 판단용 */
     private var lastWearHrMs: Long = 0L
 
-    // Meditation — HR 샘플 버퍼 (최근 120초 유지)
-    private val hrBuffer = ArrayDeque<Pair<Long, Int>>()
+    // ── 기록 시스템 (Room DB 영구 저장) ────────────────────────────
+    //
+    // 한 (service lifecycle, app mode) 조합 = 한 session.  서비스 시작 시 logger 생성,
+    // 사용자가 setOptions 로 모드를 바꾸면 (running ↔ meditation ↔ golf) 이전 logger 를
+    // persist 해 별도 세션으로 저장하고 새 모드 기준 logger 생성.
+    //
+    // 멱등 처리: SessionLogger 내부 AtomicBoolean 으로 같은 인스턴스 두 번 persist 무시.
+    // 따라서 모드 전환 시 swap 후 onDestroy 에서 다시 persist 호출되어도 안전.
+    private var sessionLogger: SessionLogger? = null
+
+    // ── Ongoing playback 상태 (모드 swap 시 새 logger 에 carry-over) ──
+    //
+    // 노이즈 / 40Hz 비트는 모드와 무관한 background 재생 — 사용자가 running 에서 노이즈를
+    // 켜놓고 meditation 으로 모드 전환해도 소리는 끊김 없이 이어져야 함.  이때 새 logger
+    // 에 noise_start / binaural_start 를 다시 보내 "이 세션에도 활성이었다" 기록.
+    //
+    // breathwork / metronome 은 모드 specific → swap 시점에 강제 stop (carry-over X).
+    private var noiseActive: Boolean = false
+    private var currentNoiseType: String = "white"
+    private var currentNoiseCutoffHz: Float = 5000f
+    private var currentNoiseVolumePct: Int = 50
+    private var binauralActive: Boolean = false
+    private var currentBinauralStrength: String = "weak"
+    private var currentBinauralMode: String = "continuous"
+
+    // ── HR 샘플 버퍼 (이원화) ────────────────────────────────────────
+    //
+    // recentHrBuffer: 최근 120초 윈도우 — 1분 평균 / 직전 1분 평균 / 시작 1분 평균 계산용.
+    //                 short circular buffer 처럼 동작 (오래된 샘플 drop).
+    //
+    // sessionHrSamples: 세션 시작부터 현재까지 전체 — 그래프 / 기록 DB 저장용.
+    //                   세션 시작 시 clear, 세션 동안 계속 누적, 종료 시 그대로 DB.
+    //
+    // 둘 다 (elapsedRealtimeMs, bpm) 튜플. recent 는 ArrayDeque (push/pop 효율),
+    // session 은 ArrayList (read 위주, 최대 1시간 = ~3600 entries 라 문제 없음).
+    //
+    // 이전 구현은 하나의 hrBuffer 만 가져 그래프가 최대 120초로 제한됨 + 기록 기능 불가.
+    private val recentHrBuffer = ArrayDeque<Pair<Long, Int>>()
+    private val sessionHrSamples = ArrayList<Pair<Long, Int>>()
+    /** recent 버퍼 보존 윈도우 — 1분 평균 등에 충분한 길이. */
+    private val recentWindowMs = 120_000L
     private var breathRunnable: Runnable? = null
     // Meditation 1분 음성 안내 트래커 (rolling window 평균을 매 60초마다 발화)
     private var minuteAnnouncerRunnable: Runnable? = null
@@ -162,6 +230,9 @@ class HRForegroundService : Service() {
             currentCadence = if (elapsedMs > 5000L)  // 최소 5초 이상 데이터
                 (stepTimestamps.size * 60_000.0 / elapsedMs).toInt()
             else 0
+            // 기록 — step 이벤트 누적 카운트, cadence 통계
+            sessionLogger?.reportStepEvent()
+            if (currentCadence > 0) sessionLogger?.reportCadence(currentCadence)
         }
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
     }
@@ -200,9 +271,22 @@ class HRForegroundService : Service() {
     override fun onCreate() {
         super.onCreate()
         sessionStartMs = SystemClock.elapsedRealtime()
+        // 세션 시작 — prefs 의 현재 모드 / device 타입 으로 logger 생성.
+        // setOptions 가 곧 호출되며 추가 컨텍스트 (코치 / TTS interval 등) 채움.
+        val prefs = getSharedPreferences("voicecoach_settings", MODE_PRIVATE)
+        val initialMode = prefs.getString("app_mode", "running") ?: "running"
+        currentAppMode = initialMode
+        sessionLogger = SessionLogger(
+            context = this,
+            mode = initialMode,
+            deviceType = currentDeviceType()
+        )
         startForegroundNotification()
-        // Wear OS 컴패니언이 페어링되어 있으면 자동 측정 시작 명령 송신
-        sendCommandToWatch("/start_hr_sender")
+        // device_type=="wear" 일 때만 워치 측정 시작 명령 송신.
+        // (예전엔 onCreate 에서 무조건 호출 → BLE/none 사용자에게도 silent fail. 의미 없는 호출)
+        if (currentDeviceType() == "wear") {
+            sendCommandToWatch("/start_hr_sender")
+        }
         acquireWakeLock()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         sensorManager = getSystemService(SENSOR_SERVICE) as? SensorManager
@@ -357,23 +441,24 @@ class HRForegroundService : Service() {
         val nowMs = SystemClock.elapsedRealtime()
         // HR=0 spurious 필터 (BLE 와 같은 정책)
         if (bpm == 0 && lastNonZeroHRMs > 0 && (nowMs - lastNonZeroHRMs) < 5000L) return
+        // hrSource 먼저 갱신 — recordHrSample 의 source 인자에 사용
+        hrSource = "wear"
         if (bpm > 0) {
             lastNonZeroHRMs = nowMs
-            hrBuffer.addLast(nowMs to bpm)
-            while (hrBuffer.isNotEmpty() && nowMs - hrBuffer.first().first > 120_000L) {
-                hrBuffer.removeFirst()
-            }
-            if (currentAppMode == "meditation" && firstMinuteAvgSnapshot == 0) {
-                val sessionElapsed = if (sessionStartMs > 0) nowMs - sessionStartMs else 0L
-                if (sessionElapsed >= 60_000L) {
-                    firstMinuteAvgSnapshot = getCurrentMinuteAvg()
+            recordHrSample(nowMs, bpm, "wear")
+            if (currentAppMode == "meditation") {
+                if (firstMinuteAvgSnapshot == 0) {
+                    val sessionElapsed = if (sessionStartMs > 0) nowMs - sessionStartMs else 0L
+                    if (sessionElapsed >= 60_000L) {
+                        firstMinuteAvgSnapshot = getCurrentMinuteAvg()
+                        sessionLogger?.reportStartMinuteAvg(firstMinuteAvgSnapshot)
+                    }
                 }
             }
         }
         currentHR = bpm
         lastHRTimestampMs = nowMs
         disconnectAnnounced = false
-        hrSource = "wear"
         lastWearHrMs = nowMs
         callback?.invoke(bpm, currentPace, "심박수 수신 중 (워치)")
         updateNotification()
@@ -398,35 +483,115 @@ class HRForegroundService : Service() {
     /**
      * 명상용 노이즈 재생/정지.
      * @param type "white" | "brown" | "custom"
-     * @param customCutoffHz "custom" 일 때만 사용 (50~22000Hz). 다른 type 은 무시.
+     * @param customCutoffHz "custom" 일 때만 사용. Brown 모드에서는 실제 cutoff 보다 톤 컨트롤에 가까움.
      */
     fun startNoise(type: String, customCutoffHz: Float = 5000f, volume: Float = 0.5f) {
-        val cutoff = when (type) {
-            "white" -> 22_000f       // 거의 풀 화이트
-            "brown" -> 250f          // 강한 저역통과 → 브라운 비슷
-            "custom" -> customCutoffHz.coerceIn(50f, 22_000f)
-            else -> 22_000f
-        }
+        val (mode, cutoff) = mapNoiseTypeToParams(type, customCutoffHz)
+        noisePlayer.setMode(mode)
         noisePlayer.setCutoff(cutoff)
         noisePlayer.setVolume(volume)
         noisePlayer.start()
+        // 서비스 레벨 상태 트래킹 — 모드 swap 시 새 logger 에 carry-over 위해
+        noiseActive = true
+        currentNoiseType = type
+        currentNoiseCutoffHz = customCutoffHz
+        currentNoiseVolumePct = (volume * 100f).toInt().coerceIn(0, 100)
+        sessionLogger?.reportNoiseStart(
+            preset = type,
+            volumePct = currentNoiseVolumePct,
+            customToneHz = if (type == "custom") customCutoffHz.toInt() else 0
+        )
     }
 
-    /** 노이즈 컷오프만 실시간 변경 (재생 중 슬라이더 이동). */
+    /**
+     * type → NoisePlayer mode + cutoff 매핑.
+     *
+     * - "white": 풀밴드 화이트
+     * - "brown": Brownian generator 의 가장 어두운 톤 (control=10, NoisePlayer 가 가청 저역대로 보정)
+     * - "custom": Brownian generator + 사용자 cutoff (10~10000Hz, 다이얼로그 슬라이더로 조정)
+     * - 그 외 (legacy / unknown): "white" 로 fallback
+     */
+    private fun mapNoiseTypeToParams(type: String, customCutoff: Float): Pair<NoisePlayer.Mode, Float> {
+        return when (type) {
+            "white" -> NoisePlayer.Mode.WHITE to 22_000f
+            "brown" -> NoisePlayer.Mode.BROWN_TONED to 10f
+            "custom" -> NoisePlayer.Mode.BROWN_TONED to customCutoff.coerceIn(10f, 22_000f)
+            else -> NoisePlayer.Mode.WHITE to 22_000f
+        }
+    }
+
+    /** 노이즈 톤 값을 실시간 변경 (재생 중 슬라이더 이동). 1초 smoothing. */
     fun updateNoiseCutoff(cutoffHz: Float) {
         noisePlayer.setCutoff(cutoffHz)
     }
 
-    /** 노이즈 음량 실시간 변경. 0~1. */
+    /** 노이즈 음량 실시간 변경. 0~1. 1초 fade. */
     fun updateNoiseVolume(v: Float) {
         noisePlayer.setVolume(v)
     }
 
     fun stopNoise() {
-        noisePlayer.stop()
+        noisePlayer.stop()  // 1초 fade-out 후 자동 release
+        noiseActive = false
+        sessionLogger?.reportNoiseStop()
     }
 
     fun isNoisePlaying(): Boolean = noisePlayer.isPlaying()
+
+    // ────────── 40Hz 포커스 비트 (binaural beat) ──────────
+    // 작업 전 집중 루틴 보조용 실험적 기능. 이어폰/헤드폰 권장.
+
+    private val binauralPlayer = BinauralBeatPlayer()
+    private var binauralFiveMinuteRunnable: Runnable? = null
+
+    /**
+     * 40Hz 포커스 비트 시작.
+     * @param strength "weak" / "medium" / "strong"
+     * @param mode "5min" (5분 후 자동 정지) / "continuous"
+     */
+    fun startBinauralBeat(strength: String, mode: String) {
+        binauralFiveMinuteRunnable?.let { handler.removeCallbacks(it) }
+        binauralFiveMinuteRunnable = null
+
+        binauralPlayer.setStrength(parseBinauralStrength(strength))
+        binauralPlayer.start()
+        // 상태 트래킹 — 모드 swap 시 새 logger 에 carry-over
+        binauralActive = true
+        currentBinauralStrength = strength
+        currentBinauralMode = mode
+        sessionLogger?.reportBinauralStart(strength, mode)
+
+        if (mode == "5min") {
+            val r = Runnable {
+                binauralPlayer.stop()
+                binauralActive = false
+                sessionLogger?.reportBinauralStop()
+            }
+            binauralFiveMinuteRunnable = r
+            handler.postDelayed(r, 5 * 60 * 1000L)
+        }
+    }
+
+    /** 비트 재생 중 강도만 변경. 1초 fade. */
+    fun updateBinauralStrength(strength: String) {
+        binauralPlayer.setStrength(parseBinauralStrength(strength))
+    }
+
+    fun stopBinauralBeat() {
+        binauralFiveMinuteRunnable?.let { handler.removeCallbacks(it) }
+        binauralFiveMinuteRunnable = null
+        binauralPlayer.stop()
+        binauralActive = false
+        sessionLogger?.reportBinauralStop()
+    }
+
+    fun isBinauralBeatPlaying(): Boolean = binauralPlayer.isPlaying()
+
+    private fun parseBinauralStrength(s: String): BinauralBeatPlayer.Strength = when (s) {
+        "medium" -> BinauralBeatPlayer.Strength.MEDIUM
+        "strong" -> BinauralBeatPlayer.Strength.STRONG
+        else -> BinauralBeatPlayer.Strength.WEAK
+    }
 
     fun setOptions(
         hr: Boolean,
@@ -444,11 +609,38 @@ class HRForegroundService : Service() {
             && newInterval == ttsInterval
             && locale == selectedLocale && coach == coachEnabled
             && newMode == currentAppMode) return
-        // 모드 전환 부수 효과
+        // 모드 전환 부수 효과 — 새 세션 경계 처리.
+        //
+        // 의도: running ↔ meditation ↔ golf 전환 시 각 모드는 별도 세션으로 기록.
+        // 이전 logger 를 즉시 persist 해 분리하고, 새 logger 를 새 모드 기준으로 생성.
+        // option-only 변경 (모드 동일) 에서는 이 블록 자체가 진입 안 되므로 logger 유지됨.
         if (newMode != currentAppMode) {
+            val oldMode = currentAppMode
+            // (a) 모드 specific runner 정리 — 이전 모드의 잔여 작업이 새 세션에 이벤트 흘러들지 않게.
+            //     · breathwork 는 meditation 전용 → 다른 모드로 전환 시 강제 stop.
+            //     · metronome 은 running/golf 모두에서 의미 있어 carry-over 가능.  단,
+            //       meditation 으로 전환 시엔 무관해지므로 stop.
+            if (oldMode == "meditation" && newMode != "meditation") {
+                stopBreathwork()
+            }
+            if (newMode == "meditation" && metronomeRunnable != null) {
+                stopMetronome()
+            }
+
+            // (b) 1분 평균 baseline + 그래프 버퍼 초기화 — 새 세션이 깨끗한 그래프로 시작.
             resetMinuteAggregation()
+            sessionHrSamples.clear()
+
+            // (c) 1분 안내 lifecycle 토글
             if (newMode == "meditation") startMinuteAnnouncer()
-            else if (currentAppMode == "meditation") stopMinuteAnnouncer()
+            else if (oldMode == "meditation") stopMinuteAnnouncer()
+
+            // (d) 세션 elapsed 클락 리셋 — focus mute 타이머 등 "세션 시작 후 N분" 계산이
+            //     이전 모드 시간을 끌고 가지 않도록.
+            sessionStartMs = SystemClock.elapsedRealtime()
+
+            // (e) Logger swap — 이전 모드 세션 영구 저장 + 새 모드 logger 생성 + carry-over.
+            swapSessionLoggerForMode(newMode)
         }
         hrEnabled = hr
         paceEnabled = pace
@@ -472,10 +664,74 @@ class HRForegroundService : Service() {
         // Meditation 모드는 항상 TTS 루프 필요 (평균 HR 안내용)
         if (newMode == "meditation" || hrEnabled || paceEnabled || cadenceEnabled) startTTSLoop()
         else stopTTSLoop()
+
+        // 기록 — Running 모드일 때 코치 / 안내 컨텍스트 갱신.
+        // (Meditation 컨텍스트는 startBreathwork 에서 더 정확히 갱신)
+        if (newMode == "running") {
+            val coachPrefs = getSharedPreferences("voicecoach_settings", MODE_PRIVATE)
+            sessionLogger?.setRunningContext(
+                coachEnabled = coach,
+                coachUpper = coachPrefs.getInt("coach_upper_bpm", 180),
+                coachLower = coachPrefs.getInt("coach_lower_bpm", 120),
+                ttsIntervalSec = intervalSeconds,
+                hrVoiceEnabled = hr,
+                paceVoiceEnabled = pace,
+                cadenceVoiceEnabled = cadence
+            )
+        }
     }
 
     /** 외부 (UI / Wear listener) 가 현재 cadence 조회. */
     fun getCurrentCadence(): Int = currentCadence
+
+    /** UI (MainActivity.enterFocusMode) 호출 — 이번 세션에 몰입 모드 사용했음. */
+    fun recordFocusModeUsed() {
+        sessionLogger?.reportFocusModeUsed()
+    }
+
+    /**
+     * 모드 전환 시 SessionLogger 교체.
+     *
+     * 흐름:
+     *   1. 이전 logger persist() — IO thread 에서 비동기 DB 저장. 멱등 (AtomicBoolean)
+     *      이라 onDestroy 의 추가 persist 호출도 안전.
+     *   2. 새 모드 / 현재 device 타입으로 SessionLogger 생성.
+     *   3. 진행 중인 background 재생 (노이즈 / 40Hz 비트) 을 새 logger 에 다시 알림 →
+     *      새 세션 카드에도 "이 세션에 노이즈/비트 사용함" 정확히 표시.
+     *
+     * 호출 직후:
+     *   - HR 샘플 / 이벤트는 새 logger 로 흘러감
+     *   - setRunningContext / setMeditationContext / setGolfContext 는 각 시점에
+     *     자연스럽게 호출됨 (running: setOptions 끝, meditation: startBreathwork,
+     *     golf: startMetronome).  swap 함수 자체는 베이스라인만 세팅.
+     */
+    private fun swapSessionLoggerForMode(newMode: String) {
+        // 1. 이전 logger 영구 저장 — 멱등.  IO thread 비동기 실행이라 main thread 블록 X.
+        try { sessionLogger?.persist() } catch (_: Exception) {}
+
+        // 2. 새 logger 생성
+        val freshLogger = SessionLogger(
+            context = this,
+            mode = newMode,
+            deviceType = currentDeviceType()
+        )
+        sessionLogger = freshLogger
+
+        // 3. Carry-over — 모드와 무관하게 계속 재생 중인 background 사운드를 새 세션에도 기록
+        if (noiseActive) {
+            freshLogger.reportNoiseStart(
+                preset = currentNoiseType,
+                volumePct = currentNoiseVolumePct,
+                customToneHz = if (currentNoiseType == "custom") currentNoiseCutoffHz.toInt() else 0
+            )
+        }
+        if (binauralActive) {
+            freshLogger.reportBinauralStart(
+                strength = currentBinauralStrength,
+                mode = currentBinauralMode
+            )
+        }
+    }
 
     private fun checkThresholds(hr: Int) {
         val prefs = getSharedPreferences("voicecoach_settings", MODE_PRIVATE)
@@ -520,6 +776,8 @@ class HRForegroundService : Service() {
     private fun playCoachAlert(upper: Boolean, threshold: Int) {
         // 0) UI 시각 피드백 (flash)
         coachAlertCallback?.invoke(upper)
+        // 기록 — 발화 시점의 BPM 함께
+        sessionLogger?.reportCoachAlert(upper, currentHR)
 
         // 1) 부드러운 비프음 — SoundPool 로 재생 (상한: 고음, 하한: 저음)
         val sp = soundPool
@@ -557,6 +815,17 @@ class HRForegroundService : Service() {
 
         val sp = soundPool ?: return
 
+        // 기록 — Golf 모드라면 컨텍스트 (BPM, 클럽 프리셋, 시각 피드백 옵션) 저장
+        val ctxPrefs = getSharedPreferences("voicecoach_settings", MODE_PRIVATE)
+        if (currentAppMode == "golf") {
+            sessionLogger?.setGolfContext(
+                bpm = bpm,
+                selectedClubPreset = ctxPrefs.getString("golf_club_preset", null),
+                flashLightEnabled = ctxPrefs.getBoolean("golf_flash_light", false),
+                flashScreenEnabled = ctxPrefs.getBoolean("golf_flash_screen", false)
+            )
+        }
+
         val thread = HandlerThread("MetronomeThread").apply { start() }
         metronomeThread = thread
         val h = Handler(thread.looper)
@@ -584,6 +853,11 @@ class HRForegroundService : Service() {
                 // UI 통지 — 시각 피드백 (골프 모드 라이트/화면 flash). main thread 로 post.
                 val cb = beatCallback
                 if (cb != null) handler.post { cb.invoke(isImpactBeat) }
+                // 기록 — 골프 모드 임팩트/스윙 비트 카운트 (다른 모드에서는 swing 만)
+                if (mode == "golf") {
+                    if (isImpactBeat) sessionLogger?.reportImpactBeat()
+                    else sessionLogger?.reportSwingBeat()
+                }
                 beatCount++
                 val nextTargetMs = beatCount * intervalMs
                 val elapsedMs = (System.nanoTime() - startTimeNs) / 1_000_000
@@ -612,7 +886,7 @@ class HRForegroundService : Service() {
     fun getAvgHR(windowSec: Int): Int {
         val now = SystemClock.elapsedRealtime()
         val windowMs = windowSec * 1000L
-        val samples = hrBuffer.filter { now - it.first <= windowMs }.map { it.second }
+        val samples = recentHrBuffer.filter { now - it.first <= windowMs }.map { it.second }
         return if (samples.isEmpty()) 0 else samples.average().toInt()
     }
 
@@ -622,7 +896,7 @@ class HRForegroundService : Service() {
      */
     fun getCurrentMinuteAvg(): Int {
         val now = SystemClock.elapsedRealtime()
-        val samples = hrBuffer.filter { now - it.first <= 60_000L }.map { it.second }
+        val samples = recentHrBuffer.filter { now - it.first <= 60_000L }.map { it.second }
         return if (samples.isEmpty()) 0 else samples.average().toInt()
     }
 
@@ -635,25 +909,100 @@ class HRForegroundService : Service() {
         return if (sessionStartMs == 0L) 0L else (SystemClock.elapsedRealtime() - sessionStartMs) / 1000
     }
 
-    /** 최근 120초 HR 샘플 스냅샷 — Meditation 그래프 그리기용. (elapsedRealtimeMs, bpm). */
-    fun getHrSamples(): List<Pair<Long, Int>> = hrBuffer.toList()
+    /**
+     * 세션 전체 HR 샘플 스냅샷 — 그래프, 기록 DB 저장 모두 사용.
+     * (elapsedRealtimeMs, bpm). 세션 시작 시점부터 호출 시점까지 누적된 모든 샘플.
+     *
+     * UI 가 호출하면 그래프는 자체 windowSec 안에서 보일 부분만 그림.
+     * 기록 저장 시엔 전체 list 그대로 DB 에 풀어 넣음.
+     */
+    fun getHrSamples(): List<Pair<Long, Int>> = sessionHrSamples.toList()
+
+    /** 최근 120초 윈도우 샘플 — 1분 평균 / 직전 1분 평균 등 rolling 계산용 디버깅. */
+    fun getRecentHrBuffer(): List<Pair<Long, Int>> = recentHrBuffer.toList()
+
+    /**
+     * HR 샘플 도착 시 모든 저장소 업데이트.
+     *   - recentHrBuffer: 120s 윈도우 (1분 평균 등)
+     *   - sessionHrSamples: 세션 전체 (제한 없음, 그래프 / 기록 DB 용)
+     *   - sessionLogger: 기록 DB row 누적 — 페이스 / 케이던스 메타도 함께 기록
+     *
+     * BLE / Wear 수신 양쪽에서 호출되는 공통 helper.
+     * source 는 caller 가 명시 전달 — 호출 후 [hrSource] 필드 갱신 순서에 의존하지 않음.
+     */
+    private fun recordHrSample(nowMs: Long, bpm: Int, source: String = hrSource) {
+        recentHrBuffer.addLast(nowMs to bpm)
+        while (recentHrBuffer.isNotEmpty() && nowMs - recentHrBuffer.first().first > recentWindowMs) {
+            recentHrBuffer.removeFirst()
+        }
+        sessionHrSamples.add(nowMs to bpm)
+        sessionLogger?.addHrSample(
+            bpm = bpm,
+            source = source,
+            paceSecPerKm = if (currentPaceMin > 0) (currentPaceMin * 60 + currentPaceSec) else null,
+            cadence = if (currentCadence > 0) currentCadence else null
+        )
+    }
 
     /**
      * Wear OS 컴패니언 앱 (페어링된 워치) 에 명령 전송.
+     *
+     * 동작:
+     *   1. CapabilityClient 로 "voicecoach_hr_sender" capability 광고 노드 조회
+     *      (= 워치에 우리 앱 설치 + reachable)
+     *   2. 발견된 노드 모두에 메시지 송신
+     *   3. start 명령일 때 결과를 broadcast — MainActivity 가 UI 표시
+     *
+     * 예전 구현은 `connectedNodes` (= 페어링된 모든 워치) 에 무차별 송신했지만,
+     * 워치 앱이 설치 안 된 노드에는 메시지가 silent drop → 사용자는 "워치 못 찾음"
+     * 같은 일반 BLE 에러 메시지만 봄. CapabilityClient 로 분리하면 "워치는 페어링됐는데
+     * VoiceCoach 가 없음" / "페어링 자체가 없음" 을 구분해 안내 가능.
+     *
      * 메인 thread 에서 Tasks.await 호출하면 ANR 위험 → 단발 worker thread.
-     * 워치 미페어링 / 미설치 시 조용히 실패.
      */
     private fun sendCommandToWatch(path: String) {
+        val isStart = path == "/start_hr_sender"
         Thread {
             try {
-                val nodes = Tasks.await(Wearable.getNodeClient(this).connectedNodes)
-                for (node in nodes) {
-                    Wearable.getMessageClient(this).sendMessage(node.id, path, ByteArray(0))
+                val capability = Tasks.await(
+                    Wearable.getCapabilityClient(this)
+                        .getCapability(CAPABILITY_HR_SENDER, CapabilityClient.FILTER_REACHABLE)
+                )
+                val capableNodes = capability.nodes
+
+                if (capableNodes.isNotEmpty()) {
+                    val client = Wearable.getMessageClient(this)
+                    for (node in capableNodes) {
+                        client.sendMessage(node.id, path, ByteArray(0))
+                    }
+                    if (isStart) broadcastWearStatus(WEAR_STATUS_OK)
+                    return@Thread
                 }
+
+                // capable 노드 없음 — start 시도일 때만 분기 진단해 broadcast.
+                // (stop 시도는 워치 앱 없으면 의미 없으니 조용히 종료)
+                if (!isStart) return@Thread
+
+                val pairedCount = try {
+                    Tasks.await(Wearable.getNodeClient(this).connectedNodes).size
+                } catch (_: Exception) { 0 }
+
+                val status = if (pairedCount == 0) WEAR_STATUS_NO_PAIRED else WEAR_STATUS_MISSING
+                broadcastWearStatus(status)
             } catch (_: Exception) {
-                // 워치 없음/꺼짐/페어링 끊김 — 무시
+                // Wearable infra 자체 미설치 / Google Play Services 미존재 등 — 조용히 종료.
+                // 이 경로는 device_type=="wear" 라도 의미 있는 안내 어려움.
             }
         }.start()
+    }
+
+    /** Service 는 직접 다이얼로그 띄우지 않음 — broadcast 만 보내고 MainActivity 가 UI 처리. */
+    private fun broadcastWearStatus(status: String) {
+        val intent = Intent(ACTION_WEAR_STATUS)
+            .setPackage(packageName)
+            .putExtra(EXTRA_WEAR_STATUS, status)
+        sendBroadcast(intent)
+        sessionLogger?.reportWearStatus(status)
     }
 
     /**
@@ -672,15 +1021,20 @@ class HRForegroundService : Service() {
 
     fun getPrevMinuteAvg(): Int {
         val now = SystemClock.elapsedRealtime()
-        val samples = hrBuffer
+        val samples = recentHrBuffer
             .filter { (ts, _) -> (now - ts) in 60_001L..120_000L }
             .map { it.second }
         return if (samples.isEmpty()) 0 else samples.average().toInt()
     }
 
-    /** Meditation 모드 진입/이탈 시 HR 버퍼 + 음성 안내 baseline 초기화 */
+    /**
+     * Meditation 모드 진입/이탈 시 HR 1분 평균 baseline 초기화.
+     *
+     * recentHrBuffer 만 clear — sessionHrSamples 는 세션 전체 그래프 / 기록용이라
+     * 모드 전환 시에도 유지. 이전 구현은 단일 hrBuffer 라 모드 전환 시 그래프도 함께 사라짐.
+     */
     private fun resetMinuteAggregation() {
-        hrBuffer.clear()
+        recentHrBuffer.clear()
         lastAnnouncedMinuteAvg = 0
         firstMinuteAvgSnapshot = 0
     }
@@ -724,6 +1078,8 @@ class HRForegroundService : Service() {
      */
     private fun announceMinuteUpdate(finishedAvg: Int) {
         if (finishedAvg <= 0) return
+        // 기록 — 음소거 여부 무관, 모든 1분 평균 측정 이벤트 기록
+        sessionLogger?.reportLastMinuteAvg(finishedAvg)
         if (isMeditationFocusMuted()) {
             // 음소거 중에도 baseline 만 갱신 (음소거 해제 후 변화량 비교를 위해)
             lastAnnouncedMinuteAvg = finishedAvg
@@ -749,15 +1105,37 @@ class HRForegroundService : Service() {
     }
 
     /**
+     * 현재 호흡 안내음 모드 — "phase" / "count" / "silent" 중 하나.
+     *
+     * Migration:
+     *   prefs `breath_audio_mode` 가 있으면 그 값 사용.
+     *   없으면 legacy `breath_metro_enabled` 값으로 추정:
+     *     true  → "count"
+     *     false → "phase"
+     *   판단 후 새 키에 저장 (다음 호출부터는 다이렉트 hit).
+     */
+    fun currentBreathAudioMode(): String {
+        val prefs = getSharedPreferences("voicecoach_settings", MODE_PRIVATE)
+        prefs.getString("breath_audio_mode", null)?.let { return it }
+        val legacy = if (prefs.getBoolean("breath_metro_enabled", false)) "count" else "phase"
+        prefs.edit().putString("breath_audio_mode", legacy).apply()
+        return legacy
+    }
+
+    /**
      * 호흡 가이드 시작. 단일 1초 Runnable 이 phase 전환과 tick 재생을 모두 담당.
      *
-     * Tick 재생 규칙:
-     *   - 초 카운트 OFF (prefs `breath_metro_enabled` = false)
+     * 안내음 모드 (prefs `breath_audio_mode`):
+     *   - "phase"  (단계만)
      *       · 첫 사이클: phase 시작 시 TTS 로 "들숨/홀드/날숨" 안내, 비프 없음
      *       · 그 뒤 사이클: phase 시작 시만 해당 phase 톤 1회 재생
-     *   - 초 카운트 ON
+     *   - "count"  (초 카운트)
      *       · phase 내부 매초 tick, 모두 동일한 phase 대표 톤 (들숨 고음 / 홀드 클릭 / 날숨 저음)
      *       · 첫 사이클도 phase 시작엔 TTS 동반
+     *   - "silent" (무음)
+     *       · TTS / 비프 / tick 전부 없음
+     *       · UI 단계 텍스트 + 애니메이션은 정상 (callback 으로 phase 전환 통지)
+     *       · 노이즈 마스킹 / 40Hz 포커스 비트는 별도 lifecycle 이라 영향 없음
      *
      * Phase 톤:
      *   들숨 → alertHighSoundId (고음)
@@ -788,6 +1166,17 @@ class HRForegroundService : Service() {
         if (phases.isEmpty()) return
         val englishMap = mapOf("들숨" to "Inhale", "홀드" to "Hold", "날숨" to "Exhale")
         val prefs = getSharedPreferences("voicecoach_settings", MODE_PRIVATE)
+        // 기록 — 호흡 세션 컨텍스트 + 시작 이벤트
+        sessionLogger?.let { logger ->
+            logger.setMeditationContext(
+                hrAvgWindowSec = 60,
+                focusMuteEnabled = prefs.getBoolean("meditation_focus_mute_enabled", false),
+                focusMuteAfterMin = prefs.getInt("meditation_focus_mute_min", 15),
+                breathPreset = presetId,
+                breathAudioMode = currentBreathAudioMode()
+            )
+            logger.reportBreathStarted()
+        }
 
         val r = object : Runnable {
             var phaseIdx = 0
@@ -797,35 +1186,40 @@ class HRForegroundService : Service() {
                 val (label, sec) = phases[phaseIdx]
                 val isPhaseStart = (secInPhase == 0)
                 val isFirstCycle = (cycleCount == 0)
-                val metroOn = prefs.getBoolean("breath_metro_enabled", false)
+                val audioMode = currentBreathAudioMode()  // "phase" | "count" | "silent"
 
                 if (isPhaseStart) {
-                    // Phase 전환 — UI 통지 (음소거 와 무관, 시각은 항상 살아있음)
+                    // Phase 전환 — UI 통지 (음소거 / 무음 모드 와 무관, 시각은 항상 살아있음)
                     breathPhaseCallback?.invoke(label, sec)
-                    if (isFirstCycle && !isMeditationFocusMuted()) {
-                        // 첫 사이클은 phase 이름 TTS 안내
+                    // 기록 — phase 시작 이벤트.  cycle 끝 (phaseIdx 마지막) 도 함께 기록.
+                    sessionLogger?.reportBreathPhaseStart(label, sec)
+                    // 첫 사이클 TTS — silent 모드 가 아니고 focus mute 도 아닐 때만
+                    if (audioMode != "silent" && isFirstCycle && !isMeditationFocusMuted()) {
                         val spoken = if (selectedLocale.language == "en") englishMap[label] ?: label else label
                         tts?.speak(spoken, TextToSpeech.QUEUE_ADD, ttsParams(), "breath_${phaseIdx}_${cycleCount}")
                     }
                 }
 
-                // Tick 결정:
-                //   - 초 카운트 ON: 매초 재생
-                //   - 초 카운트 OFF + 첫 사이클: 재생 안 함 (TTS 가 대신)
-                //   - 초 카운트 OFF + 두 번째 사이클 이후: phase 시작 시만 재생
-                val shouldTick = when {
-                    metroOn -> true
-                    isPhaseStart && !isFirstCycle -> true
-                    else -> false
+                // Tick / phase tone 결정:
+                //   - silent: 절대 재생 안 함
+                //   - count:  매초 재생
+                //   - phase:  phase 시작 시만, 첫 사이클은 TTS 가 대신해서 재생 안 함
+                val shouldPlay = when (audioMode) {
+                    "silent" -> false
+                    "count" -> true
+                    else -> isPhaseStart && !isFirstCycle  // "phase"
                 }
-                if (shouldTick) playPhaseTick(label)
+                if (shouldPlay) playPhaseTick(label)
 
                 // 진행
                 secInPhase++
                 if (secInPhase >= sec) {
                     secInPhase = 0
                     phaseIdx = (phaseIdx + 1) % phases.size
-                    if (phaseIdx == 0) cycleCount++
+                    if (phaseIdx == 0) {
+                        cycleCount++
+                        sessionLogger?.reportBreathCycleComplete(cycleCount)
+                    }
                 }
                 handler.postDelayed(this, 1000L)
             }
@@ -861,7 +1255,20 @@ class HRForegroundService : Service() {
                     .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                     .build()
                 tts?.setAudioAttributes(attrs)
-                startBLEScan()
+
+                // device_type 별로 HR 입력 경로 분기 — 두 경로를 동시에 켜면 권한/UX 혼선
+                when (currentDeviceType()) {
+                    "ble" -> startBLEScan()
+                    "wear" -> {
+                        // /start_hr_sender 는 onCreate 에서 이미 송신. 여기선 UI 상태만 갱신.
+                        // 실제 capability 검증 결과는 broadcast 로 MainActivity 에 전달됨.
+                        callback?.invoke(0, currentPace, "워치 연결 대기 중")
+                    }
+                    "none" -> {
+                        // 워치 없이 사용 모드 — HR 입력 비활성, 음성 코치/메트로놈만 동작
+                        callback?.invoke(0, currentPace, "심박수 비활성 — 워치 없이 사용 모드")
+                    }
+                }
             }
         }
     }
@@ -979,6 +1386,10 @@ class HRForegroundService : Service() {
                     currentPace = "${currentPaceMin}'${currentPaceSec.toString().padStart(2, '0')}\""
                     callback?.invoke(currentHR, currentPace, "심박수 수신 중")
                     updateNotification()
+                    // 기록 — 페이스 샘플 + 누적 거리 (Running 모드에서만 의미)
+                    if (currentAppMode == "running") {
+                        sessionLogger?.reportPaceSample(paceSecondsPerKm.toInt(), currentPace)
+                    }
                 }
             } else {
                 currentPace = ""
@@ -1072,9 +1483,11 @@ class HRForegroundService : Service() {
                     gatt.discoverServices()
                 } catch (e: SecurityException) { }
                 callback?.invoke(0, currentPace, "연결됨 — 서비스 탐색 중")
+                sessionLogger?.reportBleConnected()
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 currentHR = 0
                 callback?.invoke(0, currentPace, "연결 끊김 — 재연결 중")
+                sessionLogger?.reportBleDisconnected()
                 try {
                     gatt.close()
                 } catch (e: SecurityException) { }
@@ -1117,25 +1530,23 @@ class HRForegroundService : Service() {
             if (hr == 0 && lastNonZeroHRMs > 0 && (nowMs - lastNonZeroHRMs) < 5000L) {
                 return
             }
+            // hrSource 먼저 갱신 — recordHrSample 에 정확한 source 전달
+            hrSource = "ble"
             if (hr > 0) {
                 lastNonZeroHRMs = nowMs
-                // HR 샘플 버퍼 — 최근 120초 유지 (Meditation 1분 평균 / 이전 1분 평균 rolling 계산용)
-                hrBuffer.addLast(nowMs to hr)
-                while (hrBuffer.isNotEmpty() && nowMs - hrBuffer.first().first > 120_000L) {
-                    hrBuffer.removeFirst()
-                }
+                recordHrSample(nowMs, hr, "ble")
                 // Meditation: 세션 첫 60초 경계에서 시작 1분 평균 스냅샷 저장
                 if (currentAppMode == "meditation" && firstMinuteAvgSnapshot == 0) {
                     val sessionElapsed = if (sessionStartMs > 0) nowMs - sessionStartMs else 0L
                     if (sessionElapsed >= 60_000L) {
                         firstMinuteAvgSnapshot = getCurrentMinuteAvg()
+                        sessionLogger?.reportStartMinuteAvg(firstMinuteAvgSnapshot)
                     }
                 }
             }
             currentHR = hr
             lastHRTimestampMs = nowMs
             disconnectAnnounced = false
-            hrSource = "ble"
             callback?.invoke(hr, currentPace, "심박수 수신 중")
             updateNotification()
             // 보이스 코치는 달리기 모드에서만 동작 (골프/Meditation 에선 UI 에서 숨겨져 있음)
@@ -1312,13 +1723,24 @@ class HRForegroundService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // 페어링된 워치에 측정 정지 명령
-        sendCommandToWatch("/stop_hr_sender")
+        // 세션 기록 영구 저장 — persist 는 멱등 (한 번만 실행). DB write 는 IO thread.
+        // service.onDestroy 가 호출되는 모든 경로 (사용자 stop / task removed / system kill 등) 에서
+        // 항상 시도.  3초 미만 우발 클릭 세션은 logger 내부에서 자동 skip.
+        try { sessionLogger?.persist() } catch (_: Exception) {}
+
+        // device_type=="wear" 일 때만 stop 명령 송신.  (다른 모드는 처음부터 명령 안 보냄)
+        if (currentDeviceType() == "wear") {
+            sendCommandToWatch("/stop_hr_sender")
+        }
         handler.removeCallbacksAndMessages(null)
         stopMetronome()
         stopBreathwork()
         stopMinuteAnnouncer()
-        stopNoise()
+        // 서비스 종료 — fade 없이 즉시 release (생명주기 끝)
+        noisePlayer.stop(immediate = true)
+        binauralPlayer.stop(immediate = true)
+        binauralFiveMinuteRunnable?.let { handler.removeCallbacks(it) }
+        binauralFiveMinuteRunnable = null
         try {
             bluetoothGatt?.disconnect()
             bluetoothGatt?.close()

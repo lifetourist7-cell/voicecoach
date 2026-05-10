@@ -14,7 +14,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@android:drawable/sym_def_app_icon"
+        android:icon="@drawable/ic_wear_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.VoiceCoachWear">
@@ -23,10 +23,20 @@
             android:name="com.google.android.wearable"
             android:required="true"/>
 
-        <!-- Wear standalone — 폰 없이도 워치 자체 실행 가능 (페어링 후엔 폰과 메시지 통신) -->
+        <!-- standalone=false — 워치 단독으로는 BPM 표시만 가능, 핵심 기능 (음성 코칭 / Meditation
+             / BLE 흉부 스트랩 fallback) 은 폰 앱이 있어야 동작.  Companion 성격이 명확해서
+             Google 의 standalone 검증 통과를 위해 false 로 선언. -->
         <meta-data
             android:name="com.google.android.wearable.standalone"
-            android:value="true"/>
+            android:value="false"/>
+
+        <!--
+            Capability 광고는 res/values/wear.xml 의 "android_wear_capabilities"
+            string-array 로 처리. 시스템이 array name 을 자동 인식 → 별도 manifest
+            meta-data 불필요. (이전엔 커스텀 array name + meta-data resource 포인터를
+            썼지만 공식 권장 방식이 아님.)
+        -->
+
 
         <!--
             namespace = com.jecheon.voicecoach.wear 라 ".XYZ" 가 곧 fully qualified

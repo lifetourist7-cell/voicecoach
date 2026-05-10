@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Wearable Data Layer capability 광고 — 공식 권장 방식.
+
+    Wear OS 시스템은 빌드된 워치 APK 안의 "android_wear_capabilities" string-array 를
+    자동으로 읽어 각 capability 를 페어링된 폰에 노출시킨다. 별도 manifest meta-data
+    선언이 필요 없음.
+
+    tools:keep — resource shrinker 가 array 를 dead resource 로 판단해 제거하지 않도록
+    명시적으로 보존. (capability 는 Java/Kotlin 코드에서 직접 참조되지 않아 shrink 대상)
+
+    capability 이름은 폰의 CapabilityClient.getCapability("voicecoach_hr_sender", ...) 와
+    일치해야 함.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@array/android_wear_capabilities">
+    <string-array name="android_wear_capabilities">
+        <item>voicecoach_hr_sender</item>
+    </string-array>
+</resources>

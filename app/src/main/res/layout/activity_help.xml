@@ -108,7 +108,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="컴패니언 앱이 워치에 자동 설치 — 워치에서 권한만 허용하면 폰 앱이 심박수를 받습니다."
+                    android:text="워치 Play 스토어에서 컴패니언 앱 설치 + 권한 허용 — 자동 설치되는 경우도 있지만 항상 보장되지는 않아요."
                     android:textAppearance="@style/TextAppearance.VC.Caption"
                     android:layout_marginTop="@dimen/space_xs"/>
             </LinearLayout>
@@ -281,6 +281,33 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="박스 / 4-7-8 / 4-2-6 / 사용자 정의 — 차이와 추천 사용 시나리오."
+                    android:textAppearance="@style/TextAppearance.VC.Caption"
+                    android:layout_marginTop="@dimen/space_xs"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/cardFocusSound"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card"
+                android:padding="@dimen/space_m"
+                android:layout_marginBottom="@dimen/space_s"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="집중 사운드의 근거"
+                    android:textAppearance="@style/TextAppearance.VC.Body"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="백색/브라운 노이즈와 40Hz 바이노럴 비트의 연구 배경 + 안전 안내."
                     android:textAppearance="@style/TextAppearance.VC.Caption"
                     android:layout_marginTop="@dimen/space_xs"/>
             </LinearLayout>

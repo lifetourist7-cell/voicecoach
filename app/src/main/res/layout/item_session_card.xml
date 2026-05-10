@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    세션 한 건 카드.
+
+    1열:  모드 라벨 + 날짜 (e.g. "달리기  ·  5/3 19:32")
+    2열:  주요 메트릭 (모드별 다름) — 큰 글씨 1~2 개
+    3열:  보조 메트릭 (작은 회색)
+
+    Bind 코드 (HistorySessionAdapter) 가 모드별로 분기해서 textBinding.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_card"
+    android:padding="@dimen/space_m"
+    android:layout_marginBottom="@dimen/space_s"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
+
+    <!-- 1열 — 모드 + 날짜 + 시간 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <View
+            android:id="@+id/modeAccent"
+            android:layout_width="6dp"
+            android:layout_height="20dp"
+            android:background="@color/hr_neon_red"
+            android:layout_marginEnd="@dimen/space_s"/>
+
+        <TextView
+            android:id="@+id/tvCardMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.VC.Title"
+            tools:text="달리기"/>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="0dp"/>
+
+        <TextView
+            android:id="@+id/tvCardDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.VC.Caption"
+            tools:text="5/3 (월) 19:32"/>
+    </LinearLayout>
+
+    <!-- 2열 — 주요 메트릭 (3 슬롯, 모드별로 텍스트 다름) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="@dimen/space_m"
+        android:weightSum="3">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvCardSlot1Value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.VC.Title"
+                tools:text="42:18"/>
+
+            <TextView
+                android:id="@+id/tvCardSlot1Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.VC.Caption"
+                tools:text="시간"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvCardSlot2Value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.VC.Title"
+                tools:text="142"/>
+
+            <TextView
+                android:id="@+id/tvCardSlot2Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.VC.Caption"
+                tools:text="평균 BPM"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvCardSlot3Value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.VC.Title"
+                tools:text="5'42&quot;"/>
+
+            <TextView
+                android:id="@+id/tvCardSlot3Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.VC.Caption"
+                tools:text="평균 페이스"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 3열 — 보조 메트릭 (small) -->
+    <TextView
+        android:id="@+id/tvCardSubtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.VC.Caption"
+        android:layout_marginTop="@dimen/space_s"
+        tools:text="워치 · 케이던스 168 · 코치 알림 3회"/>
+</LinearLayout>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    필터 칩 배경 — 선택 시 surface_variant (옅은 회색) + 둥근 모서리.
+    비선택 시 투명, 텍스트 색만 secondary.
+    @color/selector_mode_text 가 텍스트 색 토글 처리.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/surface_variant"/>
+            <corners android:radius="20dp"/>
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/transparent"/>
+            <stroke android:width="1dp" android:color="@color/text_tertiary"/>
+            <corners android:radius="20dp"/>
+        </shape>
+    </item>
+</selector>
